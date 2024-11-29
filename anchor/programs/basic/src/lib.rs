@@ -23,7 +23,9 @@ pub mod polly {
         start_date: u64,
         end_date: u64,
     ) -> Result<()> {
-        if start_date >= end_date {}
+        if start_date >= end_date {
+            return Err(error!(ErrorCode::InvalidPollDates));
+        }
         let poll_counter = &mut ctx.accounts.poll_counter;
         poll_counter.count += 1;
 
@@ -32,7 +34,12 @@ pub mod polly {
         poll.title = title;
         poll.start_date = start_date;
         poll.end_date = end_date;
-        poll.candidates = 0;
+        poll.options = 0;
+        Ok(())
+    }
+
+    pub fn create_option(ctx: Context<CreateCandidate>) -> Result<()> {
+        msg!("He");
         Ok(())
     }
 }
@@ -46,7 +53,7 @@ pub struct PollCounter {
     pub count: u64,
 }
 
-// Couting number of candidates and it helps to fetch all candidates too.
+// Couting number of options and it helps to fetch all options too.
 #[account]
 #[derive(InitSpace)]
 pub struct CandidateCounter {
@@ -87,7 +94,7 @@ pub struct CreatePoll<'info> {
         init,
         payer = signer,
         space = ANCHOR_DISCRIMINATOR_SIZE + Poll::INIT_SPACE,
-        seeds = [(poll_counter.count + 1).to_le_bytes().as_ref()],
+        seeds = [b"poll", poll_counter.count.to_le_bytes().as_ref()],
         bump
     )]
     pub poll: Account<'info, Poll>,
@@ -109,5 +116,49 @@ pub struct Poll {
     pub title: String,
     pub start_date: u64,
     pub end_date: u64,
-    pub candidates: u64,
+    pub options: u64,
+}
+
+#[derive(Accounts)]
+#[instruction(poll_id: u64)]
+pub struct CreateCandidate<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(
+        mut,
+        seeds = [poll_id.to_le_bytes().as_ref()],
+        bump
+    )]
+    pub poll: Account<'info, Poll>,
+    #[account(
+        init,
+        payer = signer,
+        space = ANCHOR_DISCRIMINATOR_SIZE + Candidate::INIT_SPACE,
+        seeds = [
+            poll_id.to_le_bytes().as_ref(),
+            (candidate_counter.count + 1).to_le_bytes().as_ref()
+        ],
+        bump
+    )]
+    pub option: Account<'info, Candidate>,
+    #[account(mut)]
+    pub candidate_counter: Account<'info, CandidateCounter>,
+    pub system_program: Program<'info, System>,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct Candidate {
+    pub id: u64,
+    pub poll_id: u64,
+    #[max_len(32)]
+    pub name: String,
+    pub votes: u64,
+    pub has_voted: bool,
+}
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("The start date must be earlier than the end date.")]
+    InvalidPollDates,
 }

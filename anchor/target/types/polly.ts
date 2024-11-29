@@ -14,6 +14,51 @@ export type Polly = {
   },
   "instructions": [
     {
+      "name": "createOption",
+      "discriminator": [
+        226,
+        92,
+        124,
+        94,
+        113,
+        96,
+        60,
+        172
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "poll",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "pollId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "option",
+          "writable": true
+        },
+        {
+          "name": "candidateCounter",
+          "writable": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "createPoll",
       "discriminator": [
         182,
@@ -33,7 +78,25 @@ export type Polly = {
         },
         {
           "name": "poll",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  108,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "poll_counter.count",
+                "account": "pollCounter"
+              }
+            ]
+          }
         },
         {
           "name": "pollCounter",
@@ -163,6 +226,19 @@ export type Polly = {
   ],
   "accounts": [
     {
+      "name": "candidate",
+      "discriminator": [
+        86,
+        69,
+        250,
+        96,
+        193,
+        10,
+        222,
+        123
+      ]
+    },
+    {
       "name": "candidateCounter",
       "discriminator": [
         84,
@@ -202,7 +278,42 @@ export type Polly = {
       ]
     }
   ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "invalidPollDates",
+      "msg": "The start date must be earlier than the end date."
+    }
+  ],
   "types": [
+    {
+      "name": "candidate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "pollId",
+            "type": "u64"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "votes",
+            "type": "u64"
+          },
+          {
+            "name": "hasVoted",
+            "type": "bool"
+          }
+        ]
+      }
+    },
     {
       "name": "candidateCounter",
       "type": {
@@ -237,7 +348,7 @@ export type Polly = {
             "type": "u64"
           },
           {
-            "name": "candidates",
+            "name": "options",
             "type": "u64"
           }
         ]

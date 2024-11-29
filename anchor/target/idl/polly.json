@@ -8,6 +8,51 @@
   },
   "instructions": [
     {
+      "name": "create_option",
+      "discriminator": [
+        226,
+        92,
+        124,
+        94,
+        113,
+        96,
+        60,
+        172
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "poll",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "poll_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "option",
+          "writable": true
+        },
+        {
+          "name": "candidate_counter",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "create_poll",
       "discriminator": [
         182,
@@ -27,7 +72,25 @@
         },
         {
           "name": "poll",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  108,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "poll_counter.count",
+                "account": "PollCounter"
+              }
+            ]
+          }
         },
         {
           "name": "poll_counter",
@@ -157,6 +220,19 @@
   ],
   "accounts": [
     {
+      "name": "Candidate",
+      "discriminator": [
+        86,
+        69,
+        250,
+        96,
+        193,
+        10,
+        222,
+        123
+      ]
+    },
+    {
       "name": "CandidateCounter",
       "discriminator": [
         84,
@@ -196,7 +272,42 @@
       ]
     }
   ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidPollDates",
+      "msg": "The start date must be earlier than the end date."
+    }
+  ],
   "types": [
+    {
+      "name": "Candidate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "poll_id",
+            "type": "u64"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "votes",
+            "type": "u64"
+          },
+          {
+            "name": "has_voted",
+            "type": "bool"
+          }
+        ]
+      }
+    },
     {
       "name": "CandidateCounter",
       "type": {
@@ -231,7 +342,7 @@
             "type": "u64"
           },
           {
-            "name": "candidates",
+            "name": "options",
             "type": "u64"
           }
         ]
