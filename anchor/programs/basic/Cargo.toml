@@ -1,12 +1,12 @@
 [package]
-name = "basic"
+name = "polly"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "basic"
+name = "polly"
 
 [features]
 no-entrypoint = []
@@ -17,4 +17,4 @@ default = []
 idl-build = ["anchor-lang/idl-build"]
 
 [dependencies]
-anchor-lang = "0.30.0"
+anchor-lang = { version = "0.30.1", features = ["init-if-needed"] }
