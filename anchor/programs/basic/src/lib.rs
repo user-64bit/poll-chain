@@ -34,12 +34,38 @@ pub mod polly {
         poll.title = title;
         poll.start_date = start_date;
         poll.end_date = end_date;
-        poll.options = 0;
+        poll.candidates = 0;
         Ok(())
     }
 
-    pub fn create_option(ctx: Context<CreateCandidate>) -> Result<()> {
-        msg!("He");
+    pub fn create_candidate(
+        ctx: Context<CreateCandidate>,
+        poll_id: u64,
+        name: String,
+    ) -> Result<()> {
+        let poll = &mut ctx.accounts.poll;
+        // check if poll exists
+        if poll.id != poll_id {
+            return Err(error!(ErrorCode::PollDoesNotExist));
+        }
+
+        let candidate = &mut ctx.accounts.candidate;
+        // check if candidate has already registered
+        if candidate.has_registered {
+            return Err(error!(ErrorCode::AlreadyVoted));
+        }
+        // update candidate counter
+        let candidate_counter = &mut ctx.accounts.candidate_counter;
+        candidate_counter.count += 1;
+
+        // update candidate
+        candidate.has_registered = true;
+        candidate.id = candidate_counter.count;
+        candidate.poll_id = poll_id;
+        candidate.name = name;
+
+        // update candidates in poll
+        poll.candidates += 1;
         Ok(())
     }
 }
@@ -53,7 +79,7 @@ pub struct PollCounter {
     pub count: u64,
 }
 
-// Couting number of options and it helps to fetch all options too.
+// Couting number of candidates and it helps to fetch all candidates too.
 #[account]
 #[derive(InitSpace)]
 pub struct CandidateCounter {
@@ -116,7 +142,7 @@ pub struct Poll {
     pub title: String,
     pub start_date: u64,
     pub end_date: u64,
-    pub options: u64,
+    pub candidates: u64,
 }
 
 #[derive(Accounts)]
@@ -134,13 +160,10 @@ pub struct CreateCandidate<'info> {
         init,
         payer = signer,
         space = ANCHOR_DISCRIMINATOR_SIZE + Candidate::INIT_SPACE,
-        seeds = [
-            poll_id.to_le_bytes().as_ref(),
-            (candidate_counter.count + 1).to_le_bytes().as_ref()
-        ],
+        seeds = [b"candidate", poll_id.to_le_bytes().as_ref(), candidate_counter.count.to_le_bytes().as_ref()],
         bump
     )]
-    pub option: Account<'info, Candidate>,
+    pub candidate: Account<'info, Candidate>,
     #[account(mut)]
     pub candidate_counter: Account<'info, CandidateCounter>,
     pub system_program: Program<'info, System>,
@@ -154,11 +177,19 @@ pub struct Candidate {
     #[max_len(32)]
     pub name: String,
     pub votes: u64,
-    pub has_voted: bool,
+    pub has_registered: bool,
 }
 
 #[error_code]
 pub enum ErrorCode {
     #[msg("The start date must be earlier than the end date.")]
     InvalidPollDates,
+    #[msg("You cannot vote after the poll has ended.")]
+    PollClosed,
+    #[msg("You cannot vote before the poll has started.")]
+    PollNotStarted,
+    #[msg("You have already voted in this poll.")]
+    AlreadyVoted,
+    #[msg("The poll does not exist.")]
+    PollDoesNotExist,
 }

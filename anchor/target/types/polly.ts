@@ -14,16 +14,16 @@ export type Polly = {
   },
   "instructions": [
     {
-      "name": "createOption",
+      "name": "createCandidate",
       "discriminator": [
-        226,
-        92,
-        124,
-        94,
-        113,
-        96,
         60,
-        172
+        206,
+        192,
+        133,
+        16,
+        210,
+        22,
+        23
       ],
       "accounts": [
         {
@@ -44,8 +44,35 @@ export type Polly = {
           }
         },
         {
-          "name": "option",
-          "writable": true
+          "name": "candidate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  110,
+                  100,
+                  105,
+                  100,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "pollId"
+              },
+              {
+                "kind": "account",
+                "path": "candidate_counter.count",
+                "account": "candidateCounter"
+              }
+            ]
+          }
         },
         {
           "name": "candidateCounter",
@@ -56,7 +83,16 @@ export type Polly = {
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "pollId",
+          "type": "u64"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ]
     },
     {
       "name": "createPoll",
@@ -283,6 +319,26 @@ export type Polly = {
       "code": 6000,
       "name": "invalidPollDates",
       "msg": "The start date must be earlier than the end date."
+    },
+    {
+      "code": 6001,
+      "name": "pollClosed",
+      "msg": "You cannot vote after the poll has ended."
+    },
+    {
+      "code": 6002,
+      "name": "pollNotStarted",
+      "msg": "You cannot vote before the poll has started."
+    },
+    {
+      "code": 6003,
+      "name": "alreadyVoted",
+      "msg": "You have already voted in this poll."
+    },
+    {
+      "code": 6004,
+      "name": "pollDoesNotExist",
+      "msg": "The poll does not exist."
     }
   ],
   "types": [
@@ -308,7 +364,7 @@ export type Polly = {
             "type": "u64"
           },
           {
-            "name": "hasVoted",
+            "name": "hasRegistered",
             "type": "bool"
           }
         ]
@@ -348,7 +404,7 @@ export type Polly = {
             "type": "u64"
           },
           {
-            "name": "options",
+            "name": "candidates",
             "type": "u64"
           }
         ]
