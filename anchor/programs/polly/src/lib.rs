@@ -120,7 +120,7 @@ pub struct CreatePoll<'info> {
         init,
         payer = signer,
         space = ANCHOR_DISCRIMINATOR_SIZE + Poll::INIT_SPACE,
-        seeds = [b"poll", poll_counter.count.to_le_bytes().as_ref()],
+        seeds = [b"poll", (poll_counter.count + 1).to_le_bytes().as_ref()],
         bump
     )]
     pub poll: Account<'info, Poll>,
@@ -152,7 +152,7 @@ pub struct CreateCandidate<'info> {
     pub signer: Signer<'info>,
     #[account(
         mut,
-        seeds = [poll_id.to_le_bytes().as_ref()],
+        seeds = [b"poll", poll_id.to_le_bytes().as_ref()],
         bump
     )]
     pub poll: Account<'info, Poll>,
@@ -160,7 +160,7 @@ pub struct CreateCandidate<'info> {
         init,
         payer = signer,
         space = ANCHOR_DISCRIMINATOR_SIZE + Candidate::INIT_SPACE,
-        seeds = [b"candidate", poll_id.to_le_bytes().as_ref(), candidate_counter.count.to_le_bytes().as_ref()],
+        seeds = [b"candidate", poll_id.to_le_bytes().as_ref(), (candidate_counter.count + 1).to_le_bytes().as_ref()],
         bump
     )]
     pub candidate: Account<'info, Candidate>,

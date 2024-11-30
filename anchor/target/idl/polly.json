@@ -31,6 +31,15 @@
           "pda": {
             "seeds": [
               {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  108,
+                  108
+                ]
+              },
+              {
                 "kind": "arg",
                 "path": "poll_id"
               }
@@ -39,34 +48,7 @@
         },
         {
           "name": "candidate",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  97,
-                  110,
-                  100,
-                  105,
-                  100,
-                  97,
-                  116,
-                  101
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "poll_id"
-              },
-              {
-                "kind": "account",
-                "path": "candidate_counter.count",
-                "account": "CandidateCounter"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "candidate_counter",
@@ -108,25 +90,7 @@
         },
         {
           "name": "poll",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  108,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "poll_counter.count",
-                "account": "PollCounter"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "poll_counter",

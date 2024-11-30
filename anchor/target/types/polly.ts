@@ -37,6 +37,15 @@ export type Polly = {
           "pda": {
             "seeds": [
               {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  108,
+                  108
+                ]
+              },
+              {
                 "kind": "arg",
                 "path": "pollId"
               }
@@ -45,34 +54,7 @@ export type Polly = {
         },
         {
           "name": "candidate",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  97,
-                  110,
-                  100,
-                  105,
-                  100,
-                  97,
-                  116,
-                  101
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "pollId"
-              },
-              {
-                "kind": "account",
-                "path": "candidate_counter.count",
-                "account": "candidateCounter"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "candidateCounter",
@@ -114,25 +96,7 @@ export type Polly = {
         },
         {
           "name": "poll",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  108,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "poll_counter.count",
-                "account": "pollCounter"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "pollCounter",
