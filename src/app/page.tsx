@@ -1,3 +1,4 @@
+import { CreatePollDialog } from "@/components/create-poll";
 import { PollCard } from "@/components/poll-card";
 import { Button } from "@/components/ui/button";
 
@@ -61,9 +62,7 @@ const polls: Poll[] = [
 export default function HomePage() {
   return (
     <div className="container mx-auto p-4 bg-background text-foreground min-h-screen">
-      <Button className="bg-white text-black rounded-xl hover:bg-gray-200 transition-colors duration-300">
-        Create Poll
-      </Button>
+      <CreatePollDialog />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
         {polls.map((poll) => (
           <PollCard key={poll.id} poll={poll} />
