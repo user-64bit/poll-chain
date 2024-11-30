@@ -68,6 +68,38 @@ pub mod polly {
         poll.candidates += 1;
         Ok(())
     }
+
+    pub fn create_vote(ctx: Context<CreateVote>, poll_id: u64, candidate_id: u64) -> Result<()> {
+        let vote = &mut ctx.accounts.vote;
+        let candidate = &mut ctx.accounts.candidate;
+        let poll = &mut ctx.accounts.poll;
+
+        // Checks
+        if poll.id != poll_id {
+            return Err(error!(ErrorCode::PollDoesNotExist));
+        }
+        if candidate.id != candidate_id {
+            return Err(error!(ErrorCode::CandidateDoesNotExist));
+        }
+        let current = Clock::get()?.unix_timestamp as u64;
+        if poll.start_date > current {
+            return Err(error!(ErrorCode::PollNotStarted));
+        }
+        if poll.end_date < current {
+            return Err(error!(ErrorCode::PollClosed));
+        }
+        if vote.has_voted {
+            return Err(error!(ErrorCode::AlreadyVoted));
+        }
+        // logic
+        vote.poll_id = poll_id;
+        vote.candidate_id = candidate_id;
+        vote.has_voted = true;
+
+        candidate.votes += 1;
+
+        Ok(())
+    }
 }
 
 /* Below are the structs */
@@ -180,6 +212,43 @@ pub struct Candidate {
     pub has_registered: bool,
 }
 
+#[derive(Accounts)]
+#[instruction(poll_id: u64, candidate_id: u64)]
+pub struct CreateVote<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(
+        init,
+        payer = signer,
+        space = ANCHOR_DISCRIMINATOR_SIZE + Vote::INIT_SPACE,
+        seeds = [b"vote", poll_id.to_le_bytes().as_ref(), signer.key().as_ref()], // shouldn't let user vote for multiple candidates
+        bump,
+    )]
+    pub vote: Account<'info, Vote>,
+    #[account(
+        mut,
+        seeds = [b"candidate", poll_id.to_le_bytes().as_ref(), candidate_id.to_le_bytes().as_ref()],
+        bump
+    )]
+    pub candidate: Account<'info, Candidate>,
+    #[account(
+        mut,
+        seeds = [b"poll", poll_id.to_le_bytes().as_ref()],
+        bump
+    )]
+    pub poll: Account<'info, Poll>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct Vote {
+    pub candidate_id: u64,
+    pub poll_id: u64,
+    pub has_voted: bool,
+}
+
 #[error_code]
 pub enum ErrorCode {
     #[msg("The start date must be earlier than the end date.")]
@@ -192,4 +261,6 @@ pub enum ErrorCode {
     AlreadyVoted,
     #[msg("The poll does not exist.")]
     PollDoesNotExist,
+    #[msg("The candidate does not exist.")]
+    CandidateDoesNotExist,
 }
