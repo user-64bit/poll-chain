@@ -144,6 +144,116 @@ export type Polly = {
       ]
     },
     {
+      "name": "createVote",
+      "discriminator": [
+        173,
+        115,
+        165,
+        78,
+        226,
+        132,
+        205,
+        254
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "vote",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  111,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "pollId"
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "candidate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  110,
+                  100,
+                  105,
+                  100,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "pollId"
+              },
+              {
+                "kind": "arg",
+                "path": "candidateId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "poll",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  108,
+                  108
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "pollId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "pollId",
+          "type": "u64"
+        },
+        {
+          "name": "candidateId",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "initialize",
       "discriminator": [
         175,
@@ -276,6 +386,19 @@ export type Polly = {
         237,
         189
       ]
+    },
+    {
+      "name": "vote",
+      "discriminator": [
+        96,
+        91,
+        104,
+        57,
+        145,
+        35,
+        172,
+        155
+      ]
     }
   ],
   "errors": [
@@ -303,6 +426,11 @@ export type Polly = {
       "code": 6004,
       "name": "pollDoesNotExist",
       "msg": "The poll does not exist."
+    },
+    {
+      "code": 6005,
+      "name": "candidateDoesNotExist",
+      "msg": "The candidate does not exist."
     }
   ],
   "types": [
@@ -382,6 +510,26 @@ export type Polly = {
           {
             "name": "count",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "vote",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "candidateId",
+            "type": "u64"
+          },
+          {
+            "name": "pollId",
+            "type": "u64"
+          },
+          {
+            "name": "hasVoted",
+            "type": "bool"
           }
         ]
       }
