@@ -76,10 +76,10 @@ describe("polly", () => {
 
   it("Create a candidate", async () => {
     const signer = provider.wallet;
-    const candidates = await program.account.candidateCounter.fetch(
+    const candidateCounter = await program.account.candidateCounter.fetch(
       candidateCounterPda
     );
-    candidateId = candidates.count.add(new anchor.BN(1));
+    candidateId = candidateCounter.count.add(new anchor.BN(1));
     [candidatePda] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("candidate"),

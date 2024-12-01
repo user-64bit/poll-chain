@@ -63,7 +63,7 @@ export const PollCard = ({ poll }: { poll: Poll }) => {
   }, [poll.startDate, poll.endDate]);
 
   return (
-    <Card className="w-full flex flex-col p-2 shadow-xl">
+    <Card className="w-full flex flex-col p-2 shadow-xl cursor-default">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold">
           {poll.title.slice(0, 30) + "..."}
