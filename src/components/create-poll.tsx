@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,9 +18,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { PlusCircle, X, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { CalendarIcon, PlusCircle, X } from "lucide-react";
+import { useState } from "react";
 
 export function CreatePollDialog() {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,7 +45,7 @@ export function CreatePollDialog() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
+    // Here you would typically send the data to your blockchain
     console.log({ title, startDate, endDate, options });
     setIsOpen(false);
     // Reset form
@@ -59,20 +58,21 @@ export function CreatePollDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-white text-black rounded-xl hover:bg-gray-200 transition-colors duration-300">
+        <Button
+          size={"lg"}
+          className="transition-colors duration-300"
+        >
           Create Poll
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-base-300 border-0">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create New Poll</DialogTitle>
-          <DialogDescription>
-            Fill in the details for your new poll. Click save when you're done.
-          </DialogDescription>
+          <DialogTitle className="text-center">Create New Poll</DialogTitle>
+          <DialogDescription>Approx cost: xxx SOL</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
+            <div className="space-y-2">
               <Label htmlFor="title" className="text-right">
                 Title
               </Label>
@@ -80,119 +80,127 @@ export function CreatePollDialog() {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="col-span-3 rounded-xl"
+                className="col-span-3"
                 required
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
+            <div className="space-y-2">
               <Label htmlFor="start-date" className="text-right">
                 Start Date
               </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[340px] justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground rounded-xl"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? (
-                      format(startDate, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    className="bg-white text-black border-0 rounded-xl"
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <div className="w-full">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={
+                        "w-full justify-start text-left font-normal bg-transparent"
+                      }
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {startDate ? (
+                        format(startDate, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={setStartDate}
+                      className="bg-white text-black border-0 rounded-xl"
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
+            <div className="space-y-2">
               <Label htmlFor="end-date" className="text-right">
                 End Date
               </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[340px] justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground rounded-xl"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? (
-                      format(endDate, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    className="bg-white text-black border-0 rounded-xl"
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Options</Label>
-              <div className="col-span-3 space-y-2">
-                {options.map((option, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Input
-                      value={option}
-                      onChange={(e) =>
-                        handleOptionChange(index, e.target.value)
+              <div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={
+                        "w-full justify-start text-left font-normal bg-transparent"
                       }
-                      placeholder={`Option ${index + 1}`}
-                      className="rounded-xl"
-                      required
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {endDate ? (
+                        format(endDate, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      className="border-0 rounded-xl"
+                      initialFocus
                     />
-                    {index >= 2 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveOption(index)}
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            <div className="space-y-2 w-full">
+              <div className="grid items-center gap-4 w-full">
+                <div className="space-y-2 w-full">
+                  <Label className="text-right">Options</Label>
+                  <div className="grid grid-cols-2 w-full gap-2">
+                    {options.map((option, index) => (
+                      <div
+                        key={index}
+                        className="flex w-full items-center gap-2"
                       >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
+                        <Input
+                          value={option}
+                          onChange={(e) =>
+                            handleOptionChange(index, e.target.value)
+                          }
+                          placeholder={`Option ${index + 1}`}
+                          required
+                        />
+                        {index >= 2 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveOption(index)}
+                            className="flex-shrink-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 rounded-xl"
-                  onClick={handleAddOption}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Option
-                </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="mt-2"
+                    onClick={handleAddOption}
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Option
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
           <DialogFooter>
             <Button
               type="submit"
-              className="bg-white text-black rounded-xl hover:bg-gray-200 transition-colors duration-300"
+              className="w-full transition-colors duration-300"
             >
-              Create
+              Push to Blockchain
             </Button>
           </DialogFooter>
         </form>

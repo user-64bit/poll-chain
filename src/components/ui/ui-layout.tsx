@@ -16,8 +16,8 @@ export function UiLayout({
   const pathname = usePathname();
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="navbar bg-base-300 py-3 text-neutral-content flex-col md:flex-row space-y-2 md:space-y-0 md:px-[10%] px-5">
+    <div className="h-full flex flex-col bg-white max-h-screen">
+      <div className="py-3 flex flex-col md:flex-row justify-center border-b md:border-0 items-center space-y-2 md:space-y-0 md:px-[10%] px-5">
         <div className="flex-1">
           <Link className="btn btn-ghost normal-case text-xl" href="/">
             PollChain
@@ -39,7 +39,7 @@ export function UiLayout({
           <WalletButton />
         </div>
       </div>
-      <div className="flex-grow mx-4 lg:mx-auto md:px-[10%] px-5">
+      <div className="flex-grow lg:mx-auto md:px-[10%] px-5 bg-white">
         <Suspense
           fallback={
             <div className="text-center my-32">
@@ -50,7 +50,7 @@ export function UiLayout({
           {children}
         </Suspense>
       </div>
-      <footer className="footer footer-center p-4 bg-base-300 text-base-content">
+      <footer className="footer-center p-4 bg-white border-t md:border-0">
         <aside>
           <p>
             All rights reserved. Copyright {new Date().getFullYear()}{" "}

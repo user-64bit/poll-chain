@@ -57,13 +57,65 @@ const polls: Poll[] = [
       { label: "Svelte", votes: 200, color: "bg-orange-500" },
     ],
   },
+  {
+    id: "4",
+    title: "Favorite Frontend Framework",
+    totalVotes: 2000,
+    startDate: "2024-11-01",
+    endDate: "2024-12-31",
+    options: [
+      { label: "React", votes: 800, color: "bg-blue-500" },
+      { label: "Vue", votes: 600, color: "bg-green-500" },
+      { label: "Angular", votes: 400, color: "bg-red-500" },
+      { label: "Svelte", votes: 200, color: "bg-orange-500" },
+    ],
+  },
+  {
+    id: "5",
+    title: "Favorite Frontend Framework",
+    totalVotes: 2000,
+    startDate: "2024-11-01",
+    endDate: "2024-12-31",
+    options: [
+      { label: "React", votes: 800, color: "bg-blue-500" },
+      { label: "Vue", votes: 600, color: "bg-green-500" },
+      { label: "Angular", votes: 400, color: "bg-red-500" },
+      { label: "Svelte", votes: 200, color: "bg-orange-500" },
+    ],
+  },
+  {
+    id: "6",
+    title: "Favorite Frontend Framework",
+    totalVotes: 2000,
+    startDate: "2024-11-01",
+    endDate: "2024-12-31",
+    options: [
+      { label: "React", votes: 800, color: "bg-blue-500" },
+      { label: "Vue", votes: 600, color: "bg-green-500" },
+      { label: "Angular", votes: 400, color: "bg-red-500" },
+      { label: "Svelte", votes: 200, color: "bg-orange-500" },
+    ],
+  },
+  {
+    id: "7",
+    title: "Favorite Frontend Framework",
+    totalVotes: 2000,
+    startDate: "2024-11-01",
+    endDate: "2024-12-31",
+    options: [
+      { label: "React", votes: 800, color: "bg-blue-500" },
+      { label: "Vue", votes: 600, color: "bg-green-500" },
+      { label: "Angular", votes: 400, color: "bg-red-500" },
+      { label: "Svelte", votes: 200, color: "bg-orange-500" },
+    ],
+  },
 ];
 
 export default function HomePage() {
   return (
-    <div className="container mx-auto p-4 bg-background text-foreground min-h-screen">
+    <div className="mx-auto p-4 text-foreground">
       <CreatePollDialog />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-9 mt-4">
         {polls.map((poll) => (
           <PollCard key={poll.id} poll={poll} />
         ))}

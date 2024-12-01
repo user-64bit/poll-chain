@@ -15,6 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface PollOption {
   label: string;
@@ -62,9 +63,11 @@ export const PollCard = ({ poll }: { poll: Poll }) => {
   }, [poll.startDate, poll.endDate]);
 
   return (
-    <Card className="w-full flex flex-col bg-base-300 p-2 border-0 shadow-lg text-white">
+    <Card className="w-full flex flex-col p-2 shadow-xl">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">{poll.title.slice(0, 30) + "..."}</CardTitle>
+        <CardTitle className="text-lg font-semibold">
+          {poll.title.slice(0, 30) + "..."}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-between py-2">
         {pollStatus !== PollStatus.upcoming ? (
@@ -120,9 +123,18 @@ export const PollCard = ({ poll }: { poll: Poll }) => {
         )}
         <div className="mt-auto space-y-1">
           {pollStatus !== PollStatus.upcoming && (
-            <p className="text-sm mt-2">Total Votes: {poll.totalVotes}</p>
+            <p className="text-sm mt-2">
+              Total Votes: <span className="font-bold">{poll.totalVotes}</span>
+            </p>
           )}
-          <p className="text-sm font-medium text-center mt-1">
+          <p
+            className={cn(
+              "text-sm font-medium text-center mt-1",
+              pollStatus === PollStatus.upcoming && "text-neutral-content",
+              pollStatus === PollStatus.active && "text-success",
+              pollStatus === PollStatus.closed && "text-error"
+            )}
+          >
             {pollStatus === PollStatus.upcoming
               ? `Poll starts in ${diffDays} day${diffDays !== 1 ? "s" : ""}`
               : pollStatus === PollStatus.active
@@ -132,7 +144,7 @@ export const PollCard = ({ poll }: { poll: Poll }) => {
         </div>
       </CardContent>
       <CardFooter className="pt-2 pb-4">
-        <Button className="w-full bg-white text-black rounded-full hover:bg-gray-200 transition-colors duration-300">
+        <Button className="w-full rounded-full transition-colors duration-300">
           View Poll
         </Button>
       </CardFooter>
