@@ -37,7 +37,7 @@ interface Poll {
   options: PollOption[];
 }
 
-export const EmptyPollCard = ({ poll }: { poll: Poll }) => {
+export const PlaceholderPollCard = ({ poll }: { poll: Poll }) => {
     const [pollStatus, setPollStatus] = useState<PollStatus>(PollStatus.upcoming);
     const pollStartDate = new Date(poll.startDate);
     const pollEndDate = new Date(poll.endDate);
@@ -62,7 +62,7 @@ export const EmptyPollCard = ({ poll }: { poll: Poll }) => {
     }, [poll.startDate, poll.endDate]);
 
   return (
-    <Card className="flex flex-col p-2 shadow-xl cursor-default opacity-30 border border-gray-400/60">
+    <Card className="flex flex-col p-2 shadow-xl cursor-default opacity-30 hover:opacity-60 border border-gray-400/60">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold">
           {poll.title.slice(0, 30) + "..."}

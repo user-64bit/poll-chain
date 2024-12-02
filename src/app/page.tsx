@@ -1,6 +1,6 @@
 import { CreatePollDialog } from "@/components/create-poll";
 import { PollCard } from "@/components/poll-card";
-import { EmptyPollCard } from "@/components/poll-placeholder";
+import { PlaceholderPollCard } from "@/components/poll-placeholder";
 
 interface PollOption {
   label: string;
@@ -22,8 +22,8 @@ const dummyPolls: Poll[] = [
     id: "1",
     title: "Favorite Programming Language",
     totalVotes: 1500,
-    startDate: "2023-06-01",
-    endDate: "2023-06-30",
+    startDate: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-1`,
+    endDate: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-28`,
     options: [
       { label: "JavaScript", votes: 600, color: "bg-yellow-500" },
       { label: "Python", votes: 450, color: "bg-blue-500" },
@@ -35,8 +35,12 @@ const dummyPolls: Poll[] = [
     id: "2",
     title: "Preferred Development Environment",
     totalVotes: 1200,
-    startDate: "2024-12-15",
-    endDate: "2024-12-31",
+    startDate: `${new Date().getFullYear() + 1}-${
+      (new Date().getMonth() + 2) % 12
+    }-1`,
+    endDate: `${new Date().getFullYear() + 1}-${
+      (new Date().getMonth() + 3) % 12
+    }-28`,
     options: [
       { label: "VS Code", votes: 500, color: "bg-blue-500" },
       { label: "IntelliJ IDEA", votes: 350, color: "bg-orange-500" },
@@ -67,7 +71,7 @@ export default function HomePage() {
               {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-9 mt-4">
                   {dummyPolls.map((poll) => (
-                    <EmptyPollCard key={poll.id} poll={poll} />
+                    <PlaceholderPollCard key={poll.id} poll={poll} />
                   ))}
                 </div>
               }
