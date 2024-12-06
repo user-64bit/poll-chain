@@ -7,7 +7,12 @@ import {
 } from "@solana/web3.js";
 import idl from "../../anchor/target/idl/polly.json";
 import { Polly } from "../../anchor/target/types/polly";
-import { CandidateProps, InitializeParams, PollProps, VoteProps } from "@/utils/types";
+import {
+  CandidateProps,
+  InitializeParams,
+  PollProps,
+  VoteProps,
+} from "@/utils/types";
 
 // constants
 const RPC_ENDPOINT = "https://api.devnet.solana.com";
@@ -144,6 +149,7 @@ export const getPollbyID = async ({
     id: poll.id.toNumber(),
     startDate: poll.startDate.toNumber() * 1000,
     endDate: poll.endDate.toNumber() * 1000,
+    totalVotes: 0,
     candidates: poll.candidates.toNumber(),
     options: [],
   };

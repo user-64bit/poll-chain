@@ -189,7 +189,7 @@ export function CreatePollDialog({
                             handleOptionChange(index, e.target.value)
                           }
                           placeholder={`Option ${index + 1}`}
-                          // required
+                          required
                         />
                         {index >= 2 && (
                           <Button

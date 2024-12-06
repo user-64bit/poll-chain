@@ -2,23 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
+import { PollProps } from "@/utils/types";
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts";
 
-interface Candidate {
-  name: string;
-  votes: number;
-  color: string;
-}
-
-interface PollData {
-  id: string;
-  title: string;
-  totalVotes: number;
-  publicKey: string;
-  startDate: string;
-  endDate: string;
-  options: Candidate[];
-}
 const chartConfig = {
   desktop: {
     label: "Desktop",
@@ -30,16 +16,12 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function Poll({ pollData }: { pollData: PollData }) {
-  if (!pollData) {
-    return <div>Loading...</div>;
-  }
-
+export default function Poll({ pollData }: { pollData: PollProps }) {
   const totalVotes = pollData.totalVotes;
 
   return (
     <div className="mx-auto text-foreground">
-      <h1 className="text-3xl font-bold mb-6">{pollData.title}</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">{pollData.title}</h1>
       <div className="flex flex-col gap-y-4">
         <Card className={totalVotes > 0 ? `w-full` : "w-[650px]"}>
           <CardHeader>
@@ -89,7 +71,7 @@ export default function Poll({ pollData }: { pollData: PollData }) {
             <ul className="space-y-2">
               {pollData.options.map((option) => (
                 <li
-                  key={option.name}
+                  key={option.label}
                   className="flex justify-between items-center"
                 >
                   <div className="flex items-center">
@@ -97,13 +79,21 @@ export default function Poll({ pollData }: { pollData: PollData }) {
                       className="w-4 h-4 rounded-full mr-2"
                       style={{ backgroundColor: option.color }}
                     ></div>
-                    <span>{option.name}</span>
+                    <span>{option.label}</span>
+                    {totalVotes > 0 ? (
+                      <span className="text-sm text-muted-foreground ml-1">
+                        {"(" +
+                          ((option.votes / totalVotes) * 100).toFixed(1) +
+                          "%)"}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-muted-foreground ml-1">
+                        {"(0%)"}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center">
                     <span className="font-bold mr-2">{option.votes}</span>
-                    <span className="text-sm text-muted-foreground">
-                      ({((option.votes / totalVotes) * 100).toFixed(1)}%)
-                    </span>
                   </div>
                 </li>
               ))}

@@ -10,25 +10,10 @@ import {
 import { CreatePollDialog } from "@/components/create-poll";
 import { PollCard } from "@/components/poll-card";
 import { PlaceholderPollCard } from "@/components/poll-placeholder";
+import { PollProps } from "@/utils/types";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "./ui/button";
-
-interface PollOption {
-  label: string;
-  votes: number;
-  color: string;
-}
-
-interface Poll {
-  id: string;
-  title: string;
-  totalVotes: number;
-  publicKey: string;
-  startDate: string;
-  endDate: string;
-  options: PollOption[];
-}
 
 const dummyPolls: any[] = [
   {
@@ -64,7 +49,7 @@ const dummyPolls: any[] = [
 ];
 
 export const PollDashboard = () => {
-  const [polls, setPolls] = useState<Poll[]>([]);
+  const [polls, setPolls] = useState<PollProps[]>([]);
   const { publicKey, signTransaction, signAllTransactions } = useWallet();
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);

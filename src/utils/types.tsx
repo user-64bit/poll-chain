@@ -18,12 +18,13 @@ export interface PollProps {
   candidates: number;
   startDate: number;
   endDate: number;
+  totalVotes: number;
   options: PollOptionProps[];
 }
 export interface CandidateProps {
   id: number;
-  pollId: number;
   name: string;
+  pollId: number;
   votes: number;
   hasRegistered: boolean;
 }
@@ -31,4 +32,10 @@ export interface VoteProps {
   candidateId: BN;
   pollId: BN;
   hasVoted: boolean;
+}
+
+export enum PollStatus {
+  upcoming,
+  active,
+  closed,
 }

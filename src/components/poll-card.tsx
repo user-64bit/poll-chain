@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { PollProps, PollStatus } from "@/utils/types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
@@ -18,29 +19,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 
-interface PollOption {
-  label: string;
-  votes: number;
-  color: string;
-}
-
-interface Poll {
-  id: string;
-  title: string;
-  totalVotes: number;
-  publicKey: string;
-  startDate: string;
-  endDate: string;
-  options: PollOption[];
-}
-
-enum PollStatus {
-  upcoming,
-  active,
-  closed,
-}
-
-export const PollCard = ({ poll }: { poll: Poll }) => {
+export const PollCard = ({ poll }: { poll: PollProps }) => {
   const router = useRouter();
   const [pollStatus, setPollStatus] = useState<PollStatus>(PollStatus.upcoming);
   const pollStartDate = new Date(poll.startDate);
@@ -70,55 +49,38 @@ export const PollCard = ({ poll }: { poll: Poll }) => {
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold">
           {poll.title.slice(0, 30) + "..."}
+          {poll.options.length}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-between py-2">
-        {pollStatus !== PollStatus.upcoming ? (
+        {poll.totalVotes > 0 ? (
           <div className="space-y-2">
             <TooltipProvider>
               <div className="w-full h-6 rounded-full overflow-hidden flex cursor-pointer">
-                {poll.options.length !== 0 &&
-                  poll.options.map((option) => (
-                    <Tooltip key={option.label}>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={`h-full ${option.color} relative transition-all duration-300 ease-in-out`}
-                          style={{
-                            width: `${(option.votes / poll.totalVotes) * 100}%`,
-                          }}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="bottom"
-                        className="bg-gray-800 text-white p-2 rounded-xl text-xs"
-                      >
-                        <p>
-                          {option.label}: {option.votes} votes
-                        </p>
-                        <p>
-                          ({((option.votes / poll.totalVotes) * 100).toFixed(1)}
-                          %)
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                {poll.options.length === 0 && (
-                  <Tooltip>
+                {poll.options.map((option) => (
+                  <Tooltip key={option.label}>
                     <TooltipTrigger asChild>
-                      <div className="w-full h-6 rounded-full overflow-hidden flex cursor-pointer">
-                        <div
-                          className={`h-full bg-gray-700 relative transition-all w-full duration-300 ease-in-out`}
-                        />
-                      </div>
+                      <div
+                        className={`h-full ${option.color} relative transition-all duration-300 ease-in-out`}
+                        style={{
+                          width: `${(option.votes / poll.totalVotes) * 100}%`,
+                        }}
+                      />
                     </TooltipTrigger>
                     <TooltipContent
                       side="bottom"
                       className="bg-gray-800 text-white p-2 rounded-xl text-xs"
                     >
-                      No Options (Create one)
+                      <p>
+                        {option.label}: {option.votes} votes
+                      </p>
+                      <p>
+                        ({((option.votes / poll.totalVotes) * 100).toFixed(1)}
+                        %)
+                      </p>
                     </TooltipContent>
                   </Tooltip>
-                )}
+                ))}
               </div>
             </TooltipProvider>
           </div>
@@ -146,10 +108,10 @@ export const PollCard = ({ poll }: { poll: Poll }) => {
         <div className="mt-auto space-y-1">
           {pollStatus !== PollStatus.upcoming && (
             <p className="text-sm mt-2">
-              Total Votes: <span className="font-bold">{poll.totalVotes}</span>
+              Total Votes:{" "}
+              <span className="font-bold">{poll.totalVotes ?? 0}</span>
             </p>
           )}
-          <p>{poll.options.length}</p>
           <p
             className={cn(
               "text-sm font-medium text-center mt-1",

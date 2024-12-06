@@ -33,18 +33,18 @@ function adjustPollData(poll: PollProps, candidates: CandidateProps[]) {
   let candidatesData: any = [];
   for (let candidate of candidates) {
     candidatesData.push({
-      name: candidate.name,
+      label: candidate.name,
       votes: candidate.votes,
-      color: "#0088FE",
+      color: COLORS[candidate.id],
     });
   }
   return {
     ...poll,
-    id: poll.id.toString(),
+    id: poll.id,
     title: poll.title,
-    totalVotes: poll.options.length,
-    startDate: poll.startDate.toString(),
-    endDate: poll.endDate.toString(),
+    totalVotes: poll.options.reduce((acc, curr) => acc + curr.votes, 0),
+    startDate: poll.startDate,
+    endDate: poll.endDate,
     options: candidatesData,
   };
 }
