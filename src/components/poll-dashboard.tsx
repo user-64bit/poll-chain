@@ -13,6 +13,7 @@ import { PlaceholderPollCard } from "@/components/poll-placeholder";
 import { PollProps } from "@/utils/types";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useEffect, useMemo, useState } from "react";
+import { FilterDropdown } from "./filter-dropdown";
 import { Button } from "./ui/button";
 
 const dummyPolls: any[] = [
@@ -50,9 +51,12 @@ const dummyPolls: any[] = [
 
 export const PollDashboard = () => {
   const [polls, setPolls] = useState<PollProps[]>([]);
+  const [filteredPolls, setFilteredPolls] = useState<PollProps[]>([]); // New state for filtered polls
   const { publicKey, signTransaction, signAllTransactions } = useWallet();
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const currentTime = Date.now();
+
   const programReadOnly = useMemo(() => getReadonlyProvider(), []);
   const program = useMemo(
     () =>
@@ -65,8 +69,12 @@ export const PollDashboard = () => {
   );
 
   const fetchData = async () => {
-    getAllPollsWithCandidates({ program: programReadOnly }).then((data) =>
-      setPolls(data as any)
+    const data = await getAllPollsWithCandidates({ program: programReadOnly });
+    setPolls(data);
+    setFilteredPolls(
+      data.filter(
+        (poll) => currentTime >= poll.startDate && currentTime <= poll.endDate
+      )
     );
     const pollCounter = await getPollCounter(programReadOnly);
     setIsInitialized(pollCounter.toNumber() >= 0);
@@ -76,6 +84,25 @@ export const PollDashboard = () => {
     if (!programReadOnly) return;
     fetchData();
   }, [programReadOnly]);
+
+  const handleFilter = (state: string) => {
+    const filtered = polls.filter((poll) => {
+      if (state === "upcoming") {
+        return currentTime < poll.startDate;
+      }
+      if (state === "running") {
+        return currentTime >= poll.startDate && currentTime <= poll.endDate;
+      }
+      if (state === "closed") {
+        return currentTime > poll.endDate;
+      }
+      if (state === "all") {
+        return true;
+      }
+      return false;
+    });
+    setFilteredPolls(filtered);
+  };
 
   const handleInitialize = async () => {
     if (isInitialized && !!publicKey) return;
@@ -98,26 +125,25 @@ export const PollDashboard = () => {
     <>
       {isInitialized && (
         <div>
-          <CreatePollDialog program={program!} publicKey={publicKey!} />
-          {polls.length > 0 && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-9 mt-4">
-                {polls?.map((poll) => (
-                  <PollCard key={poll.id} poll={poll} />
-                ))}
-              </div>
-            </>
+          <div className="flex justify-between">
+            <CreatePollDialog program={program!} publicKey={publicKey!} />
+            <FilterDropdown onFilter={handleFilter} />
+          </div>
+          {filteredPolls.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-9 mt-4">
+              {filteredPolls.map((poll) => (
+                <PollCard key={poll.id} poll={poll} />
+              ))}
+            </div>
           )}
-          {polls.length === 0 && (
+          {filteredPolls.length === 0 && (
             <div className="w-full">
               <div className="flex justify-around gap-x-4">
-                {
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-9 mt-4">
-                    {dummyPolls.map((poll) => (
-                      <PlaceholderPollCard key={poll.id} poll={poll} />
-                    ))}
-                  </div>
-                }
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-9 mt-4">
+                  {dummyPolls.map((poll) => (
+                    <PlaceholderPollCard key={poll.id} poll={poll} />
+                  ))}
+                </div>
               </div>
               <div className="flex flex-col items-center justify-center mt-4">
                 <h1 className="text-2xl font-bold opacity-50">
