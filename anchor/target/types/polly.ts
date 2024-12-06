@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/polly.json`.
  */
 export type Polly = {
-  "address": "DBCCbVg1LtpzghJiiUv9su2tYnj7mSUMGUeKyQjWtpRR",
+  "address": "A2k6zbMxRGER5fwFojDef8TxgD7YHz7hpLvAEfdNx6Vq",
   "metadata": {
     "name": "polly",
     "version": "0.1.0",

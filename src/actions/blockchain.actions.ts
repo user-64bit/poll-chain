@@ -1,37 +1,17 @@
 import { AnchorProvider, BN, Program } from "@coral-xyz/anchor";
-import { Connection, PublicKey, SystemProgram } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 import idl from "../../anchor/target/idl/polly.json";
 import { Polly } from "../../anchor/target/types/polly";
+import { CandidateProps, InitializeParams, PollProps, VoteProps } from "@/utils/types";
 
 // constants
-const RPC_ENDPOINT = "http://localhost:8899";
+const RPC_ENDPOINT = "https://api.devnet.solana.com";
 const PROGRAM_ID = new PublicKey(idl.address);
-
-// interfaces
-interface InitializeParams {
-  program: Program<Polly>;
-  publicKey: PublicKey;
-  sendTransaction: (transaction: any, connection: any) => Promise<string>;
-}
-interface Poll {
-  id: BN;
-  title: string;
-  startDate: BN;
-  endDate: BN;
-  candidates: BN;
-}
-interface Candidate {
-  id: BN;
-  pollId: BN;
-  name: string;
-  votes: BN;
-  hasRegistered: boolean;
-}
-interface Vote {
-  candidateId: BN;
-  pollId: BN;
-  hasVoted: boolean;
-}
 
 // getProvider
 export const getProvider = ({
@@ -63,24 +43,24 @@ export const getProvider = ({
 // getReadonlyProvider
 // Creates a read-only provider for fetching data without signing transactions
 export const getReadonlyProvider = (): Program<Polly> => {
-  const connection = new Connection(RPC_ENDPOINT, 'confirmed');
+  const connection = new Connection(RPC_ENDPOINT, "confirmed");
 
   const dummyWallet = {
     publicKey: PublicKey.default, // Default public key for read-only operations
     signTransaction: async () => {
-      throw new Error('Read-only provider cannot sign transactions.'); // Prevent signing
+      throw new Error("Read-only provider cannot sign transactions."); // Prevent signing
     },
     signAllTransactions: async () => {
-      throw new Error('Read-only provider cannot sign transactions.'); // Prevent signing
+      throw new Error("Read-only provider cannot sign transactions."); // Prevent signing
     },
   };
 
   const provider = new AnchorProvider(connection, dummyWallet as any, {
-    commitment: 'processed',
+    commitment: "processed",
   });
 
   return new Program<Polly>(idl as any, provider);
-}
+};
 
 // initialize
 export const initialize = async ({
@@ -134,17 +114,8 @@ export const getPollCounter = async (program: Program<Polly>): Promise<BN> => {
     throw new BN(-1);
   }
 };
-// getAllPolls
-export const getAllPolls = async ({
-  program,
-}: {
-  program: Program<Polly>;
-}): Promise<Poll[]> => {
-  const polls = await program.account.poll.all();
-  return serializePolls(polls);
-};
 // serializePolls
-export const serializePolls = (polls: any): Poll[] => {
+export const serializePolls = (polls: any): PollProps[] => {
   return polls.map((poll: any) => {
     return {
       ...poll.account,
@@ -153,45 +124,29 @@ export const serializePolls = (polls: any): Poll[] => {
       startDate: poll.account.startDate.toNumber() * 1000,
       endDate: poll.account.endDate.toNumber() * 1000,
       candidates: poll.account.candidates.toNumber(),
+      options: [],
     };
   });
 };
-// createPoll
-export const createPoll = async ({
+
+// getPollbyID
+export const getPollbyID = async ({
   program,
-  publicKey,
-  nextPollCount,
-  title,
-  start_date,
-  end_date,
+  pollAddress,
 }: {
   program: Program<Polly>;
-  publicKey: PublicKey;
-  nextPollCount: BN;
-  title: string;
-  start_date: number;
-  end_date: number;
-}): Promise<Poll> => {
-  const [pollCounterPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("poll_counter")],
-    program.programId
-  );
-  const [pollPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("poll"), nextPollCount.toArrayLike(Buffer, "le", 8)],
-    program.programId
-  );
-  await program.methods
-    .createPoll(title, new BN(start_date), new BN(end_date))
-    .accounts({
-      signer: publicKey,
-      poll: pollPda,
-      // @ts-ignore
-      pollCounter: pollCounterPda,
-      systemProgram: SystemProgram.programId,
-    })
-    .rpc();
-  const poll = await program.account.poll.fetch(pollPda);
-  return poll;
+  pollAddress: string;
+}): Promise<PollProps> => {
+  const poll = await program.account.poll.fetch(pollAddress);
+  return {
+    ...poll,
+    publicKey: pollAddress,
+    id: poll.id.toNumber(),
+    startDate: poll.startDate.toNumber() * 1000,
+    endDate: poll.endDate.toNumber() * 1000,
+    candidates: poll.candidates.toNumber(),
+    options: [],
+  };
 };
 
 // getCandidateCounter
@@ -215,59 +170,8 @@ export const getCandidateCounter = async (
     throw new BN(-1);
   }
 };
-// createCandidate
-export const createCandidate = async ({
-  program,
-  publicKey,
-  pollId,
-  name,
-}: {
-  program: Program<Polly>;
-  publicKey: PublicKey;
-  pollId: BN;
-  name: string;
-}): Promise<Candidate> => {
-  const [candidateCounterPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("candidate_counter")],
-    program.programId
-  );
-  const candidateCounter = await program.account.candidateCounter.fetch(
-    candidateCounterPda
-  );
-  const candidateId = candidateCounter.count.add(new BN(1));
-  const [candidatePda] = PublicKey.findProgramAddressSync(
-    [
-      Buffer.from("candidate"),
-      pollId.toArrayLike(Buffer, "le", 8),
-      candidateId.toArrayLike(Buffer, "le", 8),
-    ],
-    program.programId
-  );
-  const [pollPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("poll"), pollId.toArrayLike(Buffer, "le", 8)],
-    program.programId
-  );
-  try {
-    await program.methods
-      .createCandidate(candidateId, name)
-      .accounts({
-        signer: publicKey,
-        // @ts-ignore
-        poll: pollPda,
-        candidate: candidatePda,
-        candidateCounter: candidateCounterPda,
-        systemProgram: SystemProgram.programId,
-      })
-      .rpc();
-    const candidate = await program.account.candidate.fetch(candidatePda);
-    return candidate;
-  } catch (error) {
-    console.error("Error creating candidate:", error);
-    throw error;
-  }
-};
 // serializeCandidates
-export const serializeCandidates = (candidates: any): Candidate[] => {
+export const serializeCandidates = (candidates: any): CandidateProps[] => {
   return candidates.map((candidate: any) => {
     return {
       ...candidate.account,
@@ -279,16 +183,22 @@ export const serializeCandidates = (candidates: any): Candidate[] => {
     };
   });
 };
-// getAllCandidates
-export const getAllCandidates = async ({
+
+// getAllCandidatesOfPoll
+export const getAllCandidatesOfPoll = async ({
   program,
+  id,
 }: {
   program: Program<Polly>;
-}): Promise<Candidate[]> => {
-  const candidates = await program.account.candidate.all();
+  id: string;
+}) => {
+  const poll_id = new BN(id);
+  const candidateAccounts = await program.account.candidate.all();
+  const candidates = candidateAccounts.filter((candidate) => {
+    return candidate.account.pollId.eq(poll_id);
+  });
   return serializeCandidates(candidates);
 };
-
 // vote
 export const vote = async ({
   program,
@@ -300,7 +210,7 @@ export const vote = async ({
   publicKey: PublicKey;
   pollId: BN;
   candidateId: BN;
-}): Promise<Vote> => {
+}): Promise<VoteProps> => {
   const [candidatePda] = PublicKey.findProgramAddressSync(
     [
       Buffer.from("candidate"),
@@ -361,4 +271,126 @@ export const hasVoted = async ({
   const vote = await program.account.vote.fetch(votePda);
   if (!vote) return false;
   return vote.hasVoted ?? false;
+};
+
+// getAllPollsWithCandidates
+export const getAllPollsWithCandidates = async ({
+  program,
+}: {
+  program: Program<Polly>;
+}) => {
+  const polls = await program.account.poll.all();
+  const candidatesData = await program.account.candidate.all();
+  const candidates = serializeCandidates(candidatesData);
+  const candidatesByPoll = serializePolls(polls);
+
+  candidates.map((candidate) => {
+    candidatesByPoll.map((poll) => {
+      if (poll.id.toString() === candidate.pollId.toString()) {
+        poll.options.push({
+          label: candidate.name,
+          votes: candidate.votes,
+          color: candidate.hasRegistered ? "bg-green-500" : "bg-red-500",
+        });
+      }
+    });
+  });
+  return candidatesByPoll;
+};
+
+// createPollWithCandidates
+export const createPollWithCandidates = async ({
+  program,
+  publicKey,
+  title,
+  startDate,
+  endDate,
+  options,
+  connection,
+  wallet,
+}: {
+  program: Program<Polly>;
+  publicKey: PublicKey;
+  title: string;
+  startDate: number;
+  endDate: number;
+  options: string[];
+  connection: Connection;
+  wallet: any;
+}) => {
+  const [pollCounterPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("poll_counter")],
+    program.programId
+  );
+  const pollCounter = await program.account.pollCounter.fetch(pollCounterPda);
+  const pollId = pollCounter.count.add(new BN(1));
+
+  const [pollPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("poll"), pollId.toArrayLike(Buffer, "le", 8)],
+    program.programId
+  );
+
+  const transaction = new Transaction();
+
+  // Add createPoll instruction
+  const pollTx = await program.methods
+    .createPoll(title, new BN(startDate), new BN(endDate))
+    .accounts({
+      signer: publicKey,
+      poll: pollPda,
+      // @ts-ignore
+      pollCounter: pollCounterPda,
+      systemProgram: SystemProgram.programId,
+    })
+    .instruction();
+  transaction.add(pollTx);
+
+  const [candidateCounterPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("candidate_counter")],
+    program.programId
+  );
+  const candidateCounter = await program.account.candidateCounter.fetch(
+    candidateCounterPda
+  );
+  let candidateId = candidateCounter.count;
+
+  for (const option of options) {
+    candidateId = candidateId.add(new BN(1));
+
+    const [candidatePda] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("candidate"),
+        pollId.toArrayLike(Buffer, "le", 8),
+        candidateId.toArrayLike(Buffer, "le", 8),
+      ],
+      program.programId
+    );
+
+    const candidateTx = await program.methods
+      .createCandidate(pollId, option)
+      .accounts({
+        signer: publicKey,
+        // @ts-ignore
+        poll: pollPda,
+        candidate: candidatePda,
+        candidateCounter: candidateCounterPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+    transaction.add(candidateTx);
+  }
+
+  // Finalize transaction
+  transaction.recentBlockhash = (
+    await connection.getLatestBlockhash()
+  ).blockhash;
+  transaction.feePayer = publicKey;
+
+  const signedTransaction = await wallet.signTransaction(transaction);
+  const txSignature = await connection.sendRawTransaction(
+    signedTransaction.serialize()
+  );
+  console.log("Transaction Signature:", txSignature);
+
+  return txSignature;
 };

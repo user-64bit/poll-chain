@@ -1,6 +1,9 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Button } from "./ui/button";
 import {
   Card,
   CardContent,
@@ -8,14 +11,12 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { Button } from "./ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { cn } from "@/lib/utils";
 
 interface PollOption {
   label: string;
@@ -27,6 +28,7 @@ interface Poll {
   id: string;
   title: string;
   totalVotes: number;
+  publicKey: string;
   startDate: string;
   endDate: string;
   options: PollOption[];
@@ -39,6 +41,7 @@ enum PollStatus {
 }
 
 export const PollCard = ({ poll }: { poll: Poll }) => {
+  const router = useRouter();
   const [pollStatus, setPollStatus] = useState<PollStatus>(PollStatus.upcoming);
   const pollStartDate = new Date(poll.startDate);
   const pollEndDate = new Date(poll.endDate);
@@ -63,7 +66,7 @@ export const PollCard = ({ poll }: { poll: Poll }) => {
   }, [poll.startDate, poll.endDate]);
 
   return (
-    <Card className="w-full flex flex-col p-2 shadow-xl cursor-default">
+    <Card className="w-full lg:w-[300px] flex flex-col p-2 shadow-xl cursor-default">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold">
           {poll.title.slice(0, 30) + "..."}
@@ -74,29 +77,48 @@ export const PollCard = ({ poll }: { poll: Poll }) => {
           <div className="space-y-2">
             <TooltipProvider>
               <div className="w-full h-6 rounded-full overflow-hidden flex cursor-pointer">
-                {poll.options.map((option) => (
-                  <Tooltip key={option.label}>
+                {poll.options.length !== 0 &&
+                  poll.options.map((option) => (
+                    <Tooltip key={option.label}>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={`h-full ${option.color} relative transition-all duration-300 ease-in-out`}
+                          style={{
+                            width: `${(option.votes / poll.totalVotes) * 100}%`,
+                          }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="bottom"
+                        className="bg-gray-800 text-white p-2 rounded-xl text-xs"
+                      >
+                        <p>
+                          {option.label}: {option.votes} votes
+                        </p>
+                        <p>
+                          ({((option.votes / poll.totalVotes) * 100).toFixed(1)}
+                          %)
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                {poll.options.length === 0 && (
+                  <Tooltip>
                     <TooltipTrigger asChild>
-                      <div
-                        className={`h-full ${option.color} relative transition-all duration-300 ease-in-out`}
-                        style={{
-                          width: `${(option.votes / poll.totalVotes) * 100}%`,
-                        }}
-                      />
+                      <div className="w-full h-6 rounded-full overflow-hidden flex cursor-pointer">
+                        <div
+                          className={`h-full bg-gray-700 relative transition-all w-full duration-300 ease-in-out`}
+                        />
+                      </div>
                     </TooltipTrigger>
                     <TooltipContent
                       side="bottom"
                       className="bg-gray-800 text-white p-2 rounded-xl text-xs"
                     >
-                      <p>
-                        {option.label}: {option.votes} votes
-                      </p>
-                      <p>
-                        ({((option.votes / poll.totalVotes) * 100).toFixed(1)}%)
-                      </p>
+                      No Options (Create one)
                     </TooltipContent>
                   </Tooltip>
-                ))}
+                )}
               </div>
             </TooltipProvider>
           </div>
@@ -127,6 +149,7 @@ export const PollCard = ({ poll }: { poll: Poll }) => {
               Total Votes: <span className="font-bold">{poll.totalVotes}</span>
             </p>
           )}
+          <p>{poll.options.length}</p>
           <p
             className={cn(
               "text-sm font-medium text-center mt-1",
@@ -144,7 +167,10 @@ export const PollCard = ({ poll }: { poll: Poll }) => {
         </div>
       </CardContent>
       <CardFooter className="pt-2 pb-4">
-        <Button className="w-full rounded-full transition-colors duration-300">
+        <Button
+          onClick={() => router.push("/poll/" + poll.publicKey)}
+          className="w-full rounded-full transition-colors duration-300"
+        >
           View Poll
         </Button>
       </CardFooter>

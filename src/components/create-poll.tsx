@@ -1,5 +1,8 @@
 "use client";
 
+import {
+  createPollWithCandidates
+} from "@/actions/blockchain.actions";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -18,16 +21,27 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Program } from "@coral-xyz/anchor";
+import { Polly } from "@project/anchor";
+import { PublicKey } from "@solana/web3.js";
 import { format } from "date-fns";
 import { CalendarIcon, PlusCircle, X } from "lucide-react";
 import { useState } from "react";
+import { useAnchorProvider } from "./solana/solana-provider";
 
-export function CreatePollDialog() {
+export function CreatePollDialog({
+  program,
+  publicKey,
+}: {
+  program: Program<Polly>;
+  publicKey: PublicKey;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [options, setOptions] = useState<string[]>(["", ""]);
+  const { connection, wallet } = useAnchorProvider();
 
   const handleAddOption = () => {
     setOptions([...options, ""]);
@@ -43,25 +57,34 @@ export function CreatePollDialog() {
     setOptions(newOptions);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the data to your blockchain
-    console.log({ title, startDate, endDate, options });
-    setIsOpen(false);
-    // Reset form
-    setTitle("");
-    setStartDate(undefined);
-    setEndDate(undefined);
-    setOptions(["", ""]);
+    try {
+      await createPollWithCandidates({
+        program,
+        publicKey,
+        startDate: startDate?.getTime()! / 1000,
+        endDate: endDate?.getTime()! / 1000,
+        title,
+        options,
+        connection,
+        wallet,
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsOpen(false);
+      setTitle("");
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setOptions(["", ""]);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          size={"lg"}
-          className="transition-colors duration-300"
-        >
+        <Button size={"lg"} className="transition-colors duration-300">
           Create Poll
         </Button>
       </DialogTrigger>
@@ -166,7 +189,7 @@ export function CreatePollDialog() {
                             handleOptionChange(index, e.target.value)
                           }
                           placeholder={`Option ${index + 1}`}
-                          required
+                          // required
                         />
                         {index >= 2 && (
                           <Button
