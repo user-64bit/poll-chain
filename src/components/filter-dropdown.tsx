@@ -4,13 +4,16 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
+const filterOptions = ["all", "running", "upcoming", "closed"];
+
 export const FilterDropdown = ({
+  currentState,
   onFilter,
 }: {
+  currentState: string;
   onFilter: (state: string) => void;
 }) => {
   return (
@@ -18,37 +21,21 @@ export const FilterDropdown = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant={"outline"} className="outline-none">
-            <Filter />
+            <Filter /> <span className="ml-2 capitalize">{currentState}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end">
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={() => onFilter("all")}
-          >
-            <span>All</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={() => onFilter("running")}
-          >
-            <span>Running</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={() => onFilter("upcoming")}
-          >
-            <span>Upcoming</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={() => onFilter("closed")}
-          >
-            <span>Closed</span>
-          </DropdownMenuItem>
+        <DropdownMenuContent className="w-56" align="start">
+          {filterOptions.map((option) => (
+            <DropdownMenuItem
+              key={option}
+              className={`cursor-pointer focus:bg-gray-200 ${
+                currentState === option && "bg-gray-200"
+              }`}
+              onClick={() => onFilter(option)}
+            >
+              <span className="capitalize">{option}</span>
+            </DropdownMenuItem>
+          ))}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
