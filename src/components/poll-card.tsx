@@ -45,11 +45,11 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
   }, [poll.startDate, poll.endDate]);
 
   return (
-    <Card className="w-full lg:w-[300px] flex flex-col p-2 shadow-xl cursor-default">
+    <Card className="w-full lg:w-[300px] flex flex-col p-1 shadow-xl cursor-default">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold">
-          {poll.title.slice(0, 30) + "..."}
-          {poll.options.length}
+          {poll.title.slice(0, 30)}
+          {poll.options.length > 30 && "..."}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-between py-2">

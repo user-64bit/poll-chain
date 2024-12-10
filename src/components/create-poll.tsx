@@ -1,10 +1,7 @@
 "use client";
 
-import {
-  createPollWithCandidates
-} from "@/actions/blockchain.actions";
+import { createPollWithCandidates } from "@/actions/blockchain.actions";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -16,18 +13,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Program } from "@coral-xyz/anchor";
 import { Polly } from "@project/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { format } from "date-fns";
-import { CalendarIcon, PlusCircle, X } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import { useState } from "react";
+import CalendarPopover from "./calendar-popover/calendar-popover";
 import { useAnchorProvider } from "./solana/solana-provider";
+import { Spinner } from "./spinner";
 
 export function CreatePollDialog({
   program,
@@ -41,6 +34,7 @@ export function CreatePollDialog({
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [options, setOptions] = useState<string[]>(["", ""]);
+  const [isLoading, setIsLoading] = useState(false);
   const { connection, wallet } = useAnchorProvider();
 
   const handleAddOption = () => {
@@ -59,6 +53,7 @@ export function CreatePollDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       await createPollWithCandidates({
         program,
@@ -78,6 +73,7 @@ export function CreatePollDialog({
       setStartDate(undefined);
       setEndDate(undefined);
       setOptions(["", ""]);
+      setIsLoading(false);
     }
   };
 
@@ -111,67 +107,13 @@ export function CreatePollDialog({
               <Label htmlFor="start-date" className="text-right">
                 Start Date
               </Label>
-              <div className="w-full">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={
-                        "w-full justify-start text-left font-normal bg-transparent"
-                      }
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? (
-                        format(startDate, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={setStartDate}
-                      className="bg-white text-black border-0 rounded-xl"
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+              <CalendarPopover date={startDate} setDate={setStartDate} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="end-date" className="text-right">
                 End Date
               </Label>
-              <div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={
-                        "w-full justify-start text-left font-normal bg-transparent"
-                      }
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? (
-                        format(endDate, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
-                      className="border-0 rounded-xl"
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+              <CalendarPopover date={endDate} setDate={setEndDate} />
             </div>
             <div className="space-y-2 w-full">
               <div className="grid items-center gap-4 w-full">
@@ -223,7 +165,7 @@ export function CreatePollDialog({
               type="submit"
               className="w-full transition-colors duration-300"
             >
-              Push to Blockchain
+              {isLoading ? <Spinner /> : "Push to Blockchain"}
             </Button>
           </DialogFooter>
         </form>

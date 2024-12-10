@@ -29,7 +29,7 @@ const COLORS = [
   "#090f6d",
 ];
 
-function adjustPollData(poll: PollProps, candidates: CandidateProps[]) {
+function searilizedPollData(poll: PollProps, candidates: CandidateProps[]) {
   let candidatesData: any = [];
   for (let candidate of candidates) {
     candidatesData.push({
@@ -56,7 +56,7 @@ export default async function PollIDPage({ params }: { params: any }) {
     program: readonly,
     id: poll.id.toString(),
   });
-  const pollData = adjustPollData(poll, candidates);
+  const pollData = searilizedPollData(poll, candidates);
   return (
     <>
       <Poll pollData={pollData} />

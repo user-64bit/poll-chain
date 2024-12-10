@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { PollProps } from "@/utils/types";
 import { Filter } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -9,7 +7,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { PollCard } from "./poll-card";
 
 export const FilterDropdown = ({
   onFilter,

@@ -15,6 +15,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useEffect, useMemo, useState } from "react";
 import { FilterDropdown } from "./filter-dropdown";
 import { Button } from "./ui/button";
+import { Spinner } from "./spinner";
 
 const dummyPolls: any[] = [
   {
@@ -51,7 +52,7 @@ const dummyPolls: any[] = [
 
 export const PollDashboard = () => {
   const [polls, setPolls] = useState<PollProps[]>([]);
-  const [filteredPolls, setFilteredPolls] = useState<PollProps[]>([]); // New state for filtered polls
+  const [filteredPolls, setFilteredPolls] = useState<PollProps[]>([]);
   const { publicKey, signTransaction, signAllTransactions } = useWallet();
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -83,7 +84,7 @@ export const PollDashboard = () => {
   useEffect(() => {
     if (!programReadOnly) return;
     fetchData();
-  }, [programReadOnly]);
+  }, [programReadOnly, polls]);
 
   const handleFilter = (state: string) => {
     const filtered = polls.filter((poll) => {
@@ -130,7 +131,7 @@ export const PollDashboard = () => {
             <FilterDropdown onFilter={handleFilter} />
           </div>
           {filteredPolls.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-9 mt-4">
+            <div className="flex gap-4 flex-wrap gax-4 mt-4">
               {filteredPolls.map((poll) => (
                 <PollCard key={poll.id} poll={poll} />
               ))}
@@ -159,13 +160,13 @@ export const PollDashboard = () => {
       )}
       {!isInitialized && (
         <div>
-          <div>
+          <div className="flex flex-col justify-center items-center">
             <Button
               onClick={() => handleInitialize()}
               size={"lg"}
-              className="w-full transition-colors duration-300"
+              className="transition-colors duration-300"
             >
-              {isLoading ? "Initializing..." : "Initialize"}
+              {isLoading ? <Spinner /> : "Initialize"}
             </Button>
           </div>
         </div>
