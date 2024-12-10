@@ -33,7 +33,7 @@ function searilizedPollData(poll: PollProps, candidates: CandidateProps[]) {
   let candidatesData: any = [];
   for (let candidate of candidates) {
     candidatesData.push({
-      label: candidate.name,
+      name: candidate.name,
       votes: candidate.votes,
       color: COLORS[candidate.id],
     });

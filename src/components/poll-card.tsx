@@ -58,7 +58,7 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
             <TooltipProvider>
               <div className="w-full h-6 rounded-full overflow-hidden flex cursor-pointer">
                 {poll.options.map((option) => (
-                  <Tooltip key={option.label}>
+                  <Tooltip key={option.name}>
                     <TooltipTrigger asChild>
                       <div
                         className={`h-full ${option.color} relative transition-all duration-300 ease-in-out`}
@@ -72,7 +72,7 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
                       className="bg-gray-800 text-white p-2 rounded-xl text-xs"
                     >
                       <p>
-                        {option.label}: {option.votes} votes
+                        {option.name}: {option.votes} votes
                       </p>
                       <p>
                         ({((option.votes / poll.totalVotes) * 100).toFixed(1)}

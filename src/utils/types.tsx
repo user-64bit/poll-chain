@@ -7,7 +7,7 @@ export interface InitializeParams {
   publicKey: PublicKey;
 }
 export interface PollOptionProps {
-  label: string;
+  name: string;
   votes: number;
   color: string;
 }
