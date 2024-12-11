@@ -7,6 +7,7 @@ export interface InitializeParams {
   publicKey: PublicKey;
 }
 export interface PollOptionProps {
+  id: string;
   name: string;
   votes: number;
   color: string;
@@ -19,6 +20,7 @@ export interface PollProps {
   startDate: number;
   endDate: number;
   totalVotes: number;
+  status: string;
   options: PollOptionProps[];
 }
 export interface CandidateProps {

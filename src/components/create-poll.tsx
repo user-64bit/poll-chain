@@ -21,6 +21,8 @@ import { useState } from "react";
 import CalendarPopover from "./calendar-popover/calendar-popover";
 import { useAnchorProvider } from "./solana/solana-provider";
 import { Spinner } from "./spinner";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export function CreatePollDialog({
   program,
@@ -36,6 +38,7 @@ export function CreatePollDialog({
   const [options, setOptions] = useState<string[]>(["", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const { connection, wallet } = useAnchorProvider();
+  const { toast } = useToast()
 
   const handleAddOption = () => {
     setOptions([...options, ""]);
@@ -54,6 +57,19 @@ export function CreatePollDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    const currentDate = new Date();
+    if (startDate && startDate < currentDate || endDate && endDate < currentDate) {
+      toast({
+        className: cn(
+          'top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4'
+        ),
+        title: "What you doing ser?",
+        description: "Start date or/and end date cannot be in the past",
+        variant:"destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
     try {
       await createPollWithCandidates({
         program,

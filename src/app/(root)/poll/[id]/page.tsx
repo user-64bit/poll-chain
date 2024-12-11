@@ -1,10 +1,14 @@
+"use client";
 import {
   getAllCandidatesOfPoll,
   getPollbyID,
   getReadonlyProvider,
 } from "@/actions/blockchain.actions";
 import Poll from "@/components/poll";
+import { Spinner } from "@/components/spinner";
 import { CandidateProps, PollProps } from "@/utils/types";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 const COLORS = [
   "#53ca19",
@@ -33,30 +37,64 @@ function searilizedPollData(poll: PollProps, candidates: CandidateProps[]) {
   let candidatesData: any = [];
   for (let candidate of candidates) {
     candidatesData.push({
+      id: candidate.id,
       name: candidate.name,
       votes: candidate.votes,
       color: COLORS[candidate.id],
     });
   }
+  const now = new Date()
+  const startDate = new Date(poll.startDate);
+  const endDate = new Date(poll.endDate);
+  let status = "closed";
+  if (now < startDate){
+    status = "upcoming";
+  }
+  else if (now >= startDate && now <= endDate){
+    status = "running";
+  }
   return {
     ...poll,
     id: poll.id,
     title: poll.title,
-    totalVotes: poll.options.reduce((acc, curr) => acc + curr.votes, 0),
+    totalVotes: candidatesData.reduce(
+      (acc: any, curr: any) => acc + curr.votes,
+      0
+    ),
     startDate: poll.startDate,
     endDate: poll.endDate,
     options: candidatesData,
+    status,
   };
 }
-export default async function PollIDPage({ params }: { params: any }) {
-  const id = await params.id;
-  const readonly = getReadonlyProvider();
-  const poll = await getPollbyID({ program: readonly, pollAddress: id });
-  const candidates = await getAllCandidatesOfPoll({
-    program: readonly,
-    id: poll.id.toString(),
-  });
-  const pollData = searilizedPollData(poll, candidates);
+export default function PollIDPage() {
+  const { id } = useParams();
+  const readonly = useMemo(() => getReadonlyProvider(), []);
+  const [pollData, setPollData] = useState<PollProps>();
+
+  const fetchPollData = async () => {
+    const poll = await getPollbyID({
+      program: readonly,
+      pollAddress: id.toString(),
+    });
+    const candidates = await getAllCandidatesOfPoll({
+      program: readonly,
+      id: poll.id.toString(),
+    });
+    const data = searilizedPollData(poll, candidates);
+    setPollData(data);
+  };
+  useEffect(() => {
+    fetchPollData();
+  }, [pollData]);
+  if (!pollData)
+    return (
+      <div>
+        <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center">
+          <Spinner size={"lg"} />
+        </div>
+      </div>
+    );
   return (
     <>
       <Poll pollData={pollData} />

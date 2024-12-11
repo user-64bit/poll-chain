@@ -150,6 +150,7 @@ export const getPollbyID = async ({
     startDate: poll.startDate.toNumber() * 1000,
     endDate: poll.endDate.toNumber() * 1000,
     totalVotes: 0,
+    status:"",
     candidates: poll.candidates.toNumber(),
     options: [],
   };
@@ -265,7 +266,7 @@ export const hasVoted = async ({
   program: Program<Polly>;
   publicKey: PublicKey;
   pollId: BN;
-}): Promise<boolean> => {
+}): Promise<VoteProps | null> => {
   const [votePda] = PublicKey.findProgramAddressSync(
     [
       Buffer.from("vote"),
@@ -274,9 +275,12 @@ export const hasVoted = async ({
     ],
     program.programId
   );
-  const vote = await program.account.vote.fetch(votePda);
-  if (!vote) return false;
-  return vote.hasVoted ?? false;
+  try {
+    const vote = await program.account.vote.fetch(votePda);
+    return vote;
+  } catch (e) {
+    return null;
+  }
 };
 
 // getAllPollsWithCandidates
@@ -294,7 +298,8 @@ export const getAllPollsWithCandidates = async ({
     candidatesByPoll.map((poll) => {
       if (poll.id.toString() === candidate.pollId.toString()) {
         poll.options.push({
-          label: candidate.name,
+          id: candidate.id.toString(),
+          name: candidate.name,
           votes: candidate.votes,
           color: candidate.hasRegistered ? "bg-green-500" : "bg-red-500",
         });
