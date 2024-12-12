@@ -22,7 +22,6 @@ export const PollDashboard = () => {
   const [filteredPolls, setFilteredPolls] = useState<PollProps[]>([]);
   const { publicKey, signTransaction, signAllTransactions } = useWallet();
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentState, setCurrentState] = useState<string>("running");
 
   const currentTime = Date.now();
@@ -60,29 +59,27 @@ export const PollDashboard = () => {
     });
     setFilteredPolls(updatedFilteredPolls);
   }, [polls, currentState]);
-  
 
   const handleFilter = (state: string) => {
     setCurrentState(state);
   };
-  
 
-  const handleInitialize = async () => {
-    if (isInitialized && !!publicKey) return;
-    setIsLoading(true);
-    try {
-      const transaction = await initialize({
-        program: program as any,
-        publicKey: publicKey as any,
-      });
-      console.log("Transaction signature:", transaction);
-    } catch (error) {
-      console.error("Initialization failed:", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const handleInitialize = async () => {
+  //   if (isInitialized && !!publicKey) return;
+  //   setIsLoading(true);
+  //   try {
+  //     const transaction = await initialize({
+  //       program: program as any,
+  //       publicKey: publicKey as any,
+  //     });
+  //     console.log("Transaction signature:", transaction);
+  //   } catch (error) {
+  //     console.error("Initialization failed:", error);
+  //     throw error;
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <>
@@ -106,6 +103,13 @@ export const PollDashboard = () => {
         </div>
       )}
       {!isInitialized && (
+        <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center">
+          <Spinner size={"lg"} />
+        </div>
+      )}
+
+      {/* TODO: Uncomment below and comment above code when the contract needs to be deployed with new programId */}
+      {/* {!isInitialized && (
         <div>
           <div className="flex flex-col justify-center items-center">
             <Button
@@ -117,7 +121,7 @@ export const PollDashboard = () => {
             </Button>
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 };
