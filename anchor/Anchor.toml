@@ -15,7 +15,7 @@ polly = "A2k6zbMxRGER5fwFojDef8TxgD7YHz7hpLvAEfdNx6Vq"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

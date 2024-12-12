@@ -24,7 +24,7 @@ export const WalletButton = dynamic(
 );
 
 export function SolanaProvider({ children }: { children: ReactNode }) {
-  const RPC_ENDPOINT = "http://127.0.0.1:8899";
+  const RPC_ENDPOINT = "https://api.devnet.solana.com";
   const onError = useCallback((error: WalletError) => {
     console.error(error);
   }, []);
