@@ -101,6 +101,7 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
       });
       if (voteData.hasVoted) {
         setVoted(true);
+        setVotedFor(option.name);
       }
     } catch (error) {
       console.error("Error voting:", error);

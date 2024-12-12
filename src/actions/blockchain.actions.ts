@@ -150,7 +150,7 @@ export const getPollbyID = async ({
     startDate: poll.startDate.toNumber() * 1000,
     endDate: poll.endDate.toNumber() * 1000,
     totalVotes: 0,
-    status:"",
+    status: "",
     candidates: poll.candidates.toNumber(),
     options: [],
   };

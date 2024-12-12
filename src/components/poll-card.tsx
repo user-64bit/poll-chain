@@ -25,6 +25,7 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
   const pollStartDate = new Date(poll.startDate);
   const pollEndDate = new Date(poll.endDate);
   const now = new Date();
+  const totalVotes = poll.options.reduce((acc, curr) => acc + curr.votes, 0);
   const diffDays = Math.ceil(
     Math.abs(
       (pollStatus === PollStatus.upcoming
@@ -53,7 +54,7 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-between py-2">
-        {poll.totalVotes > 0 ? (
+        {totalVotes > 0 ? (
           <div className="space-y-2">
             <TooltipProvider>
               <div className="w-full h-6 rounded-full overflow-hidden flex cursor-pointer">
@@ -63,7 +64,7 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
                       <div
                         className={`h-full ${option.color} relative transition-all duration-300 ease-in-out`}
                         style={{
-                          width: `${(option.votes / poll.totalVotes) * 100}%`,
+                          width: `${(option.votes / totalVotes) * 100}%`,
                         }}
                       />
                     </TooltipTrigger>
@@ -75,7 +76,7 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
                         {option.name}: {option.votes} votes
                       </p>
                       <p>
-                        ({((option.votes / poll.totalVotes) * 100).toFixed(1)}
+                        ({((option.votes / totalVotes) * 100).toFixed(1)}
                         %)
                       </p>
                     </TooltipContent>
@@ -109,7 +110,7 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
           {pollStatus !== PollStatus.upcoming && (
             <p className="text-sm mt-2">
               Total Votes:{" "}
-              <span className="font-bold">{poll.totalVotes ?? 0}</span>
+              <span className="font-bold">{totalVotes ?? 0}</span>
             </p>
           )}
           <p
