@@ -8,13 +8,7 @@ import { BN, Program } from "@coral-xyz/anchor";
 import { Polly } from "@project/anchor";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  Tooltip
-} from "recharts";
+import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
 import { Spinner } from "./spinner";
 import { Button } from "./ui/button";
 
@@ -101,7 +95,7 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
       });
       if (voteData.hasVoted) {
         setVoted(true);
-        setVotedFor(option.name);
+        setVotedFor(option.id.toString());
       }
     } catch (error) {
       console.error("Error voting:", error);
@@ -114,12 +108,12 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
       <div className="w-full max-w-4xl">
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
           <span className="border-b-2">{pollData.title}</span>
-          {
-            pollData.status === "closed" && <span className="text-red-400">Poll is closed</span>
-          }
-          {
-            pollData.status === "upcoming" && <span className="text-gray-400">Poll not started</span>
-          }
+          {pollData.status === "closed" && (
+            <span className="text-red-400">Poll is closed</span>
+          )}
+          {pollData.status === "upcoming" && (
+            <span className="text-gray-400">Poll not started</span>
+          )}
         </h1>
         <div className="flex flex-col gap-y-4">
           <Card className="w-full">
