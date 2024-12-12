@@ -17,7 +17,7 @@ export function UiLayout({
   const pathname = usePathname();
 
   return (
-    <div className="h-full flex flex-col bg-white max-h-screen">
+    <div className="h-full flex flex-col bg-white max-h-screen md:mx-[10%]">
       <div className="py-3 flex flex-col md:flex-row justify-center border-b md:border-0 items-center space-y-2 md:space-y-0 px-5">
         <div className="flex-1">
           <Link className="font-bold text-xl" href="/">
@@ -43,17 +43,6 @@ export function UiLayout({
       <div className="bg-white mb-auto">
         <Suspense fallback={<Spinner />}>{children}</Suspense>
       </div>
-      <footer
-        className="footer-center p-4 bg-white border-t md:border-0"
-        style={{ backgroundColor: "white" }}
-      >
-        <aside>
-          <p>
-            All rights reserved. Copyright {new Date().getFullYear()}{" "}
-            @PollChain.
-          </p>
-        </aside>
-      </footer>
     </div>
   );
 }

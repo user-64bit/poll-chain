@@ -57,7 +57,8 @@ export function CreatePollDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const currentDate = new Date();
+    let currentDate = new Date();
+    currentDate.setDate(currentDate.getDate() - 1);
     if (startDate && startDate < currentDate || endDate && endDate < currentDate) {
       toast({
         className: cn(
