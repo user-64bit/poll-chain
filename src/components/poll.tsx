@@ -84,7 +84,7 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
   useEffect(() => {
     if (!program || voted || !publicKey || !pollData) return;
     checkVoted();
-  }, [program, publicKey, wallet, pollData.candidates, voted, setVoted]);
+  }, [program, publicKey, wallet, voted, setVoted]);
 
   useEffect(() => {
     setIsCopied(true);

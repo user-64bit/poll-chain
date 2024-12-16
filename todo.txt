@@ -1,5 +1,4 @@
 # Features
 
--> Share poll
--> poll url 
+-> code cleanup
 -> validations
