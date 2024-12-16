@@ -144,6 +144,7 @@ export function CreatePollDialog({
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                maxLength={280}
                 className="col-span-3"
               />
               {validatationError.title && (
@@ -165,7 +166,10 @@ export function CreatePollDialog({
             <div className="space-y-2 w-full">
               <div className="grid items-center gap-4 w-full">
                 <div className="space-y-2 w-full">
-                  <Label className="text-right">Options</Label>
+                  <Label className="text-left">
+                    <p>Options</p>
+                    <p className="text-xs text-muted-foreground">Max 32 characters per option</p>
+                  </Label>
                   <div className="grid grid-cols-2 w-full gap-2">
                     {options.map((option, index) => (
                       <div
@@ -177,8 +181,8 @@ export function CreatePollDialog({
                           onChange={(e) =>
                             handleOptionChange(index, e.target.value)
                           }
+                          maxLength={32}
                           placeholder={`Option ${index + 1}`}
-                          required
                         />
                         {index >= 2 && (
                           <Button

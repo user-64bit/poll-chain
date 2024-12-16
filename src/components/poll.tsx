@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
 import { Spinner } from "./spinner";
 import { Button } from "./ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const chartConfig = {
   desktop: {
@@ -70,6 +71,7 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
     [publicKey, signTransaction, signAllTransactions]
   );
   const [isCopied, setIsCopied] = useState(false);
+  const { toast } = useToast();
 
   const checkVoted = async () => {
     const voteStatus = await hasVoted({
@@ -87,13 +89,20 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
   }, [program, publicKey, wallet, voted, setVoted]);
 
   useEffect(() => {
-    setIsCopied(true);
     setTimeout(() => {
       setIsCopied(false);
     }, 2000);
   }, [isCopied]);
 
   const handleVote = async (option: any) => {
+    if (pollData.status === "closed" || pollData.status === "upcoming"){
+      toast({
+        title: "Poll is not running",
+        description: "You cannot vote in a poll that is not running",
+        variant: "destructive",
+      });
+      return;
+    }
     setIsLoading(true);
     try {
       const voteData = await vote({
@@ -130,10 +139,10 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
             </span>
           </p>
           {pollData.status === "closed" && (
-            <span className="text-red-400">Poll is closed</span>
+            <span className="text-sm underline text-red-400">Poll is closed</span>
           )}
           {pollData.status === "upcoming" && (
-            <span className="text-gray-400">Poll not started</span>
+            <span className="text-sm underline text-gray-400">Poll not started</span>
           )}
         </h1>
         <div className="flex flex-col gap-y-4">
