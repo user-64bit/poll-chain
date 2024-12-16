@@ -17,8 +17,8 @@ export function UiLayout({
   const pathname = usePathname();
 
   return (
-    <div className="h-full flex flex-col bg-white max-h-screen md:mx-[10%]">
-      <div className="py-3 flex flex-col md:flex-row justify-center border-b md:border-0 items-center space-y-2 md:space-y-0 px-5">
+    <div className="h-full flex flex-col bg-white max-h-screen">
+      <div className="py-3 flex flex-col md:flex-row justify-center border-b md:border-0 items-center space-y-2 md:space-y-0 px-5 md:px-[10%]">
         <div className="flex-1">
           <Link className="font-bold text-xl" href="/">
             PollChain
@@ -40,7 +40,7 @@ export function UiLayout({
           <WalletButton />
         </div>
       </div>
-      <div className="bg-white mb-auto">
+      <div className="bg-white md:px-[10%]">
         <Suspense fallback={<Spinner />}>{children}</Suspense>
       </div>
     </div>
