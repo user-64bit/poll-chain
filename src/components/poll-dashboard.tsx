@@ -21,6 +21,7 @@ export const PollDashboard = () => {
   const [polls, setPolls] = useState<PollProps[]>([]);
   const [filteredPolls, setFilteredPolls] = useState<PollProps[]>([]);
   const { publicKey, signTransaction, signAllTransactions } = useWallet();
+  // const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const [currentState, setCurrentState] = useState<string>("running");
 

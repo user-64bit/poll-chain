@@ -7,6 +7,7 @@ import { PollProps } from "@/utils/types";
 import { BN, Program } from "@coral-xyz/anchor";
 import { Polly } from "@project/anchor";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { Check, Copy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
 import { Spinner } from "./spinner";
@@ -68,6 +69,7 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
       }),
     [publicKey, signTransaction, signAllTransactions]
   );
+  const [isCopied, setIsCopied] = useState(false);
 
   const checkVoted = async () => {
     const voteStatus = await hasVoted({
@@ -83,6 +85,13 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
     if (!program || voted || !publicKey || !pollData) return;
     checkVoted();
   }, [program, publicKey, wallet, pollData.candidates, voted, setVoted]);
+
+  useEffect(() => {
+    setIsCopied(true);
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+  }, [isCopied]);
 
   const handleVote = async (option: any) => {
     setIsLoading(true);
@@ -107,7 +116,19 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
     <div className="flex justify-center text-foreground cursor-default">
       <div className="w-full max-w-4xl">
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
-          <span className="border-b-2">{pollData.title}</span>
+          <p className="flex items-center gap-x-2 justify-center">
+            <span className="border-b-2">{pollData.title}</span>
+            <span>
+              {!isCopied ? (
+                <Copy className="w-4 h-4 text-gray-400 cursor-pointer" onClick={() => {
+                  setIsCopied(true);
+                  navigator.clipboard.writeText(window.location.href);
+                }} />
+              ) : (
+                <Check className="w-4 h-4 text-green-600 cursor-pointer" />
+              )}
+            </span>
+          </p>
           {pollData.status === "closed" && (
             <span className="text-red-400">Poll is closed</span>
           )}

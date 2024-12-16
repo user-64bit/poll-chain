@@ -15,7 +15,7 @@ import {
 } from "@/utils/types";
 
 // constants
-const RPC_ENDPOINT = "https://api.devnet.solana.com";
+const RPC_ENDPOINT = process.env.RPC_ENDPOINT || "http://localhost:8899";
 const PROGRAM_ID = new PublicKey(idl.address);
 
 // getProvider

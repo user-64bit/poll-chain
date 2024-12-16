@@ -1,4 +1,5 @@
 "use client";
+
 import {
   getAllCandidatesOfPoll,
   getPollbyID,
@@ -43,14 +44,13 @@ function searilizedPollData(poll: PollProps, candidates: CandidateProps[]) {
       color: COLORS[candidate.id],
     });
   }
-  const now = new Date()
+  const now = new Date();
   const startDate = new Date(poll.startDate);
   const endDate = new Date(poll.endDate);
   let status = "closed";
-  if (now < startDate){
+  if (now < startDate) {
     status = "upcoming";
-  }
-  else if (now >= startDate && now <= endDate){
+  } else if (now >= startDate && now <= endDate) {
     status = "running";
   }
   return {
@@ -67,6 +67,7 @@ function searilizedPollData(poll: PollProps, candidates: CandidateProps[]) {
     status,
   };
 }
+
 export default function PollIDPage() {
   const { id } = useParams();
   const readonly = useMemo(() => getReadonlyProvider(), []);

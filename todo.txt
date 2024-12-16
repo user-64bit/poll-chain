@@ -1,0 +1,5 @@
+# Features
+
+-> Share poll
+-> poll url 
+-> validations

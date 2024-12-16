@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import { Program } from "@coral-xyz/anchor";
 import { Polly } from "@project/anchor";
 import { PublicKey } from "@solana/web3.js";
@@ -21,8 +22,6 @@ import { useState } from "react";
 import CalendarPopover from "./calendar-popover/calendar-popover";
 import { useAnchorProvider } from "./solana/solana-provider";
 import { Spinner } from "./spinner";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 
 export function CreatePollDialog({
   program,
@@ -38,7 +37,15 @@ export function CreatePollDialog({
   const [options, setOptions] = useState<string[]>(["", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const { connection, wallet } = useAnchorProvider();
-  const { toast } = useToast()
+  const [validatationError, setValidatationError] = useState<{
+    [key: string]: boolean;
+  }>({
+    title: false,
+    startDate: false,
+    endDate: false,
+    options: false,
+  });
+  const { toast } = useToast();
 
   const handleAddOption = () => {
     setOptions([...options, ""]);
@@ -56,21 +63,42 @@ export function CreatePollDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     let currentDate = new Date();
     currentDate.setDate(currentDate.getDate() - 1);
-    if (startDate && startDate < currentDate || endDate && endDate < currentDate) {
+    if (
+      (startDate && startDate < currentDate) ||
+      (endDate && endDate < currentDate)
+    ) {
       toast({
-        className: cn(
-          'top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4'
-        ),
         title: "What you doing ser?",
         description: "Start date or/and end date cannot be in the past",
-        variant:"destructive",
+        variant: "destructive",
       });
-      setIsLoading(false);
       return;
     }
+    if (!wallet || !connection || !publicKey) {
+      toast({
+        title: "Wallet not connected",
+        description: "Please connect your wallet to continue",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (
+      title === "" ||
+      startDate === undefined ||
+      endDate === undefined ||
+      options.map((option) => option === "").includes(true)
+    ) {
+      setValidatationError({
+        title: title === "",
+        startDate: startDate === undefined,
+        endDate: endDate === undefined,
+        options: options.map((option) => option === "").includes(true),
+      });
+      return;
+    }
+    setIsLoading(true);
     try {
       await createPollWithCandidates({
         program,
@@ -117,8 +145,10 @@ export function CreatePollDialog({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="col-span-3"
-                required
               />
+              {validatationError.title && (
+                <p className="text-red-500 text-xs">Title is required</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="start-date" className="text-right">
