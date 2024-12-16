@@ -1,11 +1,12 @@
-import PollID from "@/components/poll-id-page/poll-id-page";
-
 import {
   getAllCandidatesOfPoll,
   getPollbyID,
   getReadonlyProvider,
 } from "@/actions/blockchain.actions";
+import { searilizedPollData } from "@/utils/helper";
 import { Metadata } from "next";
+import { Spinner } from "@/components/spinner";
+import Poll from "@/components/poll";
 
 export async function generateMetadata({
   params,
@@ -59,6 +60,33 @@ export async function generateMetadata({
   }
 }
 
-export default function PollIDPage() {
-  return <PollID />;
+export default async function PollIDPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const readonly = getReadonlyProvider();
+  const poll = await getPollbyID({
+    program: readonly,
+    pollAddress: params.id,
+  });
+  const candidates = await getAllCandidatesOfPoll({
+    program: readonly,
+    id: poll.id.toString(),
+  });
+  const pollData = searilizedPollData(poll, candidates);
+
+  if (!pollData)
+    return (
+      <div>
+        <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center">
+          <Spinner size={"lg"} />
+        </div>
+      </div>
+    );
+  return (
+    <>
+      <Poll pollData={pollData} />
+    </>
+  );
 }
