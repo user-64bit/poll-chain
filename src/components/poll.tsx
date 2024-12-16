@@ -45,11 +45,14 @@ const renderCustomizedLabel = ({
       x={x}
       y={y}
       fill="white"
-      textAnchor={x > cx ? "start" : "end"}
+      textAnchor={"middle"}
       dominantBaseline="central"
       className="rounded-full"
     >
-      {`${name} ${(percent * 100).toFixed(0)}%`}
+      {
+        name.length > 20 ? `${name.slice(0, 10)}...` : name
+      }
+      {` (${(percent * 100).toFixed(0)}%)`}
     </text>
   );
 };
