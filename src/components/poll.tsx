@@ -49,9 +49,7 @@ const renderCustomizedLabel = ({
       dominantBaseline="central"
       className="rounded-full"
     >
-      {
-        name.length > 20 ? `${name.slice(0, 10)}...` : name
-      }
+      {name.length > 20 ? `${name.slice(0, 10)}...` : name}
       {` (${(percent * 100).toFixed(0)}%)`}
     </text>
   );
@@ -98,10 +96,18 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
   }, [isCopied]);
 
   const handleVote = async (option: any) => {
-    if (pollData.status === "closed" || pollData.status === "upcoming"){
+    if (pollData.status === "closed" || pollData.status === "upcoming") {
       toast({
         title: "Poll is not running",
         description: "You cannot vote in a poll that is not running",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!publicKey || !wallet) {
+      toast({
+        title: "Wallet not connected",
+        description: "Please connect your wallet to continue",
         variant: "destructive",
       });
       return;
@@ -132,20 +138,27 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
             <span className="border-b-2">{pollData.title}</span>
             <span>
               {!isCopied ? (
-                <Copy className="w-4 h-4 text-gray-400 cursor-pointer" onClick={() => {
-                  setIsCopied(true);
-                  navigator.clipboard.writeText(window.location.href);
-                }} />
+                <Copy
+                  className="w-4 h-4 text-gray-400 cursor-pointer"
+                  onClick={() => {
+                    setIsCopied(true);
+                    navigator.clipboard.writeText(window.location.href);
+                  }}
+                />
               ) : (
                 <Check className="w-4 h-4 text-green-600 cursor-pointer" />
               )}
             </span>
           </p>
           {pollData.status === "closed" && (
-            <span className="text-sm underline text-red-400">Poll is closed</span>
+            <span className="text-sm underline text-red-400">
+              Poll is closed
+            </span>
           )}
           {pollData.status === "upcoming" && (
-            <span className="text-sm underline text-gray-400">Poll not started</span>
+            <span className="text-sm underline text-gray-400">
+              Poll not started
+            </span>
           )}
         </h1>
         <div className="flex flex-col gap-y-4">
