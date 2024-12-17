@@ -1,10 +1,6 @@
 import { SolanaProvider } from "@/components/solana/solana-provider";
 import { UiLayout } from "@/components/ui/ui-layout";
 
-export const metadata = {
-  title: "PollChain",
-  description: "A decentralized polling platform",
-};
 
 const links: { label: string; path: string }[] = [];
 
