@@ -1,5 +1,5 @@
 import { COLORS } from "./colors";
-import { CandidateProps, PollProps } from "./types";
+import { CandidateProps, PollOptionProps, PollProps } from "./types";
 
 export function searilizedPollData(
   poll: PollProps,
@@ -36,4 +36,17 @@ export function searilizedPollData(
     options: candidatesData,
     status,
   };
+}
+
+export function getPollWinner(poll: PollProps) {
+  const totalVotes = poll.totalVotes;
+  const candidates = poll.options;
+  if (totalVotes === 0) return null;
+  let winner: PollOptionProps | null = null;
+  for (let candidate of candidates) {
+    if (candidate.votes > (winner?.votes || 0)) {
+      winner = candidate;
+    }
+  }
+  return winner;
 }

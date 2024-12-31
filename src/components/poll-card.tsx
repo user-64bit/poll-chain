@@ -18,12 +18,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import { getPollWinner } from "@/utils/helper";
 
 export const PollCard = ({ poll }: { poll: PollProps }) => {
   const router = useRouter();
   const [pollStatus, setPollStatus] = useState<PollStatus>(PollStatus.upcoming);
   const pollStartDate = new Date(poll.startDate);
   const pollEndDate = new Date(poll.endDate);
+  const pollOutput = getPollWinner(poll);
   const now = new Date();
   const totalVotes = poll.options.reduce((acc, curr) => acc + curr.votes, 0);
   const diffDays = Math.ceil(
@@ -48,6 +50,11 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
   return (
     <Card className="w-full lg:w-[300px] flex flex-col p-1 shadow-xl cursor-default">
       <CardHeader className="pb-2">
+        <p className="text-sm text-center underline">
+          {pollStatus === PollStatus.closed && pollOutput
+            ? `${pollOutput.name} won the poll 🎉`
+            : "No winner for this poll."}
+        </p>
         <CardTitle className="text-lg font-semibold">
           {poll.title.slice(0, 30)}
           {poll.options.length > 30 && "..."}
@@ -109,8 +116,7 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
         <div className="mt-auto space-y-1">
           {pollStatus !== PollStatus.upcoming && (
             <p className="text-sm mt-2">
-              Total Votes:{" "}
-              <span className="font-bold">{totalVotes ?? 0}</span>
+              Total Votes: <span className="font-bold">{totalVotes ?? 0}</span>
             </p>
           )}
           <p
