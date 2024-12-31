@@ -13,6 +13,7 @@ import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
 import { Spinner } from "./spinner";
 import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { getPollWinner } from "@/utils/helper";
 
 const chartConfig = {
   desktop: {
@@ -60,6 +61,7 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
   const [voted, setVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const pollOutput = getPollWinner(pollData);
   const { publicKey, signTransaction, signAllTransactions, wallet } =
     useWallet();
   const program = useMemo(
@@ -160,6 +162,11 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
               Poll not started
             </span>
           )}
+          <p className="text-sm text-center underline">
+            {pollData.status === "closed" && pollOutput
+              ? `${pollOutput.name} won the poll 🎉`
+              : "No winner for this poll."}
+          </p>
         </h1>
         <div className="flex flex-col gap-y-4">
           <Card className="w-full">
@@ -240,7 +247,7 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
                     </div>
                     <div className="flex items-center">
                       <Button
-                        disabled={voted}
+                        disabled={voted || pollData.status === "closed"}
                         onClick={() => handleVote(option)}
                       >
                         {isLoading ? (
