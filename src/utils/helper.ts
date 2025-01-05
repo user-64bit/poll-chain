@@ -1,5 +1,19 @@
-import { COLORS } from "./colors";
 import { CandidateProps, PollOptionProps, PollProps } from "./types";
+
+export function stringToColorHash(inputString: string) {
+  let hash = 0;
+  for (let i = 0; i < inputString.length; i++) {
+    hash = inputString.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  let color = "#";
+  for (let i = 0; i < 3; i++) {
+    const value = (hash >> (i * 8)) & 0xff;
+    color += ("00" + value.toString(16)).slice(-2);
+  }
+
+  return color;
+}
 
 export function searilizedPollData(
   poll: PollProps,
@@ -11,7 +25,7 @@ export function searilizedPollData(
       id: candidate.id,
       name: candidate.name,
       votes: candidate.votes,
-      color: COLORS[candidate.id],
+      color: stringToColorHash(candidate.name),
     });
   }
   const now = new Date();

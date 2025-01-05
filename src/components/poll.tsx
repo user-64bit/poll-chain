@@ -14,6 +14,7 @@ import { Spinner } from "./spinner";
 import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { getPollWinner } from "@/utils/helper";
+import { useRouter } from "next/navigation";
 
 const chartConfig = {
   desktop: {
@@ -57,6 +58,7 @@ const renderCustomizedLabel = ({
 };
 
 export default function Poll({ pollData }: { pollData: PollProps }) {
+  const router = useRouter();
   const totalVotes = pollData.totalVotes;
   const [voted, setVoted] = useState(false);
   const [votedFor, setVotedFor] = useState<string | null>(null);
@@ -126,6 +128,8 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
         setVoted(true);
         setVotedFor(option.id.toString());
       }
+      // Hack: hard refresh to show voting data on page
+      window.location.reload();
     } catch (error) {
       console.error("Error voting:", error);
     } finally {

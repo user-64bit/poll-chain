@@ -110,6 +110,8 @@ export function CreatePollDialog({
         connection,
         wallet,
       });
+      // Hack: hard refresh the page to show the new poll
+      window.location.reload();
     } catch (error) {
       console.error(error);
     } finally {
