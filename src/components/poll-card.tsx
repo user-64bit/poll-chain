@@ -19,6 +19,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { getPollWinner } from "@/utils/helper";
+import SharePollDialog from "./share-poll-dailog";
 
 export const PollCard = ({ poll }: { poll: PollProps }) => {
   const router = useRouter();
@@ -135,13 +136,14 @@ export const PollCard = ({ poll }: { poll: PollProps }) => {
           </p>
         </div>
       </CardContent>
-      <CardFooter className="pt-2 pb-4">
+      <CardFooter className="pt-2 pb-4 flex gap-x-2">
         <Button
           onClick={() => router.push("/poll/" + poll.publicKey)}
           className="w-full rounded-full transition-colors duration-300"
         >
           View Poll
         </Button>
+        <SharePollDialog pollAdress={poll.publicKey} candidates={poll.options} />
       </CardFooter>
     </Card>
   );

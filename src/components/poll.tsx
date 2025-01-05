@@ -3,18 +3,19 @@
 import { getProvider, hasVoted, vote } from "@/actions/blockchain.actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
+import { useToast } from "@/hooks/use-toast";
+import { getPollWinner } from "@/utils/helper";
 import { PollProps } from "@/utils/types";
 import { BN, Program } from "@coral-xyz/anchor";
 import { Polly } from "@project/anchor";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Check, Copy } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
+import SharePollDialog from "./share-poll-dailog";
 import { Spinner } from "./spinner";
 import { Button } from "./ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { getPollWinner } from "@/utils/helper";
-import { useRouter } from "next/navigation";
+import { Share2 } from "lucide-react";
 
 const chartConfig = {
   desktop: {
@@ -75,7 +76,6 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
       }),
     [publicKey, signTransaction, signAllTransactions]
   );
-  const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
 
   const checkVoted = async () => {
@@ -92,12 +92,6 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
     if (!program || voted || !publicKey || !pollData) return;
     checkVoted();
   }, [program, publicKey, wallet, voted, setVoted]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setIsCopied(false);
-    }, 2000);
-  }, [isCopied]);
 
   const handleVote = async (option: any) => {
     if (pollData.status === "closed" || pollData.status === "upcoming") {
@@ -128,12 +122,12 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
         setVoted(true);
         setVotedFor(option.id.toString());
       }
-      // Hack: hard refresh to show voting data on page
-      window.location.reload();
     } catch (error) {
       console.error("Error voting:", error);
     } finally {
       setIsLoading(false);
+      // Hack: hard refresh to show voting data on page
+      window.location.reload();
     }
   };
   return (
@@ -143,17 +137,11 @@ export default function Poll({ pollData }: { pollData: PollProps }) {
           <p className="flex items-center gap-x-2 justify-center">
             <span className="border-b-2">{pollData.title}</span>
             <span>
-              {!isCopied ? (
-                <Copy
-                  className="w-4 h-4 text-gray-400 cursor-pointer"
-                  onClick={() => {
-                    setIsCopied(true);
-                    navigator.clipboard.writeText(window.location.href);
-                  }}
-                />
-              ) : (
-                <Check className="w-4 h-4 text-green-600 cursor-pointer" />
-              )}
+              <SharePollDialog
+                pollAdress={pollData.publicKey}
+                candidates={pollData.options}
+                trigger={<Share2 className="w-5 h-5 text-gray-400 cursor-pointer" />}
+              />
             </span>
           </p>
           {pollData.status === "closed" && (
