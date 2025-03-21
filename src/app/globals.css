@@ -7,16 +7,78 @@ body {
   height: 100%;
 }
 
+/* Wallet adapter styles */
 .wallet-adapter-button-trigger {
   background: rgb(100, 26, 230) !important;
   border-radius: 8px !important;
   padding-left: 16px !important;
   padding-right: 16px !important;
+  transition: all 0.3s ease !important;
+}
+.wallet-adapter-button-trigger:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px -5px rgba(100, 26, 230, 0.3) !important;
 }
 .wallet-adapter-dropdown-list,
 .wallet-adapter-button {
   font-family: inherit !important;
 }
+.wallet-adapter-dropdown-list {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Enhanced scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Theme variables */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -78,6 +140,18 @@ body {
     @apply border-border;
   }
   body {
-    @apply text-foreground;
+    @apply text-foreground bg-background transition-colors duration-300;
   }
+}
+
+/* Loading placeholder animation */
+.loading-placeholder {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted) / 0.7) 25%,
+    hsl(var(--muted) / 0.3) 50%,
+    hsl(var(--muted) / 0.7) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
 }

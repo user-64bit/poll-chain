@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { PollOptionProps } from "@/utils/types";
 import { Check, Copy, Linkedin, Share2, Twitter } from "lucide-react";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SharePollDialog({
   pollAdress,
@@ -37,6 +38,7 @@ export default function SharePollDialog({
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {}
   };
+  
   const shareToSocial = (platform: string) => {
     let shareUrl = "";
 
@@ -69,54 +71,121 @@ export default function SharePollDialog({
         ) : (
           <Button
             variant={"outline"}
-            className="w-full rounded-full transition-colors duration-300"
+            className="w-full rounded-full transition-all duration-300 border-border/60 hover:border-border hover:bg-secondary/80 hover:shadow-sm"
           >
-            <Share2 className="h-4 w-4" />
-            Share Poll
+            <motion.div 
+              className="flex items-center justify-center"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Share
+            </motion.div>
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md overflow-hidden bg-card/90 backdrop-blur-sm border-border/40">
         <DialogHeader>
-          <DialogTitle className="text-center">Share this Poll</DialogTitle>
+          <DialogTitle className="text-center">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="inline-block"
+            >
+              <span className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent font-bold">
+                Share this Poll
+              </span>
+            </motion.div>
+          </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="flex items-center space-x-2">
-            <Input value={pollURL} readOnly className="font-mono text-sm" />
+        
+        <motion.div 
+          className="space-y-5 py-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <motion.div 
+            className="flex items-center space-x-2 relative"
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <Input 
+              value={pollURL} 
+              readOnly 
+              className="font-mono text-sm pr-10 transition-all border-border/50 focus:border-primary/50 bg-background/50" 
+            />
             <Button
               variant="outline"
               size="icon"
               onClick={copyToClipboard}
-              className="shrink-0"
+              className="absolute right-1 border-0 bg-transparent hover:bg-secondary/80"
               aria-label="Copy URL to clipboard"
             >
-              {copied ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
+              <AnimatePresence mode="wait">
+                {copied ? (
+                  <motion.div
+                    key="check"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Check className="h-4 w-4 text-green-500" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="copy"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </Button>
-          </div>
+          </motion.div>
 
-          <div className="flex justify-between gap-x-3">
+          <motion.div 
+            className="flex justify-between gap-x-3"
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
             <Button
               variant="outline"
-              className="w-full"
+              className="w-full bg-[#1DA1F2]/10 hover:bg-[#1DA1F2]/20 text-[#1DA1F2] hover:text-[#1DA1F2] border-[#1DA1F2]/20 hover:border-[#1DA1F2]/30 transition-all duration-300"
               onClick={() => shareToSocial("twitter")}
             >
-              <Twitter className="mr-2 h-4 w-4" />
-              Twitter
+              <motion.div 
+                className="flex items-center"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Twitter className="mr-2 h-4 w-4" />
+                Twitter
+              </motion.div>
             </Button>
             <Button
               variant="outline"
-              className="w-full"
+              className="w-full bg-[#0077B5]/10 hover:bg-[#0077B5]/20 text-[#0077B5] hover:text-[#0077B5] border-[#0077B5]/20 hover:border-[#0077B5]/30 transition-all duration-300"
               onClick={() => shareToSocial("linkedin")}
             >
-              <Linkedin className="mr-2 h-4 w-4" />
-              LinkedIn
+              <motion.div 
+                className="flex items-center"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Linkedin className="mr-2 h-4 w-4" />
+                LinkedIn
+              </motion.div>
             </Button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
