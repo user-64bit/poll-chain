@@ -28,7 +28,7 @@ export const getProvider = ({
   publicKey: PublicKey | null;
   signTransaction: any;
   signAllTransactions: any;
-}) => {
+}): Program<Polly> | null => {
   if (!publicKey || !signTransaction) {
     return null;
   }
@@ -44,7 +44,7 @@ export const getProvider = ({
       preflightCommitment: "processed",
     }
   );
-  return new Program(idl as any, provider);
+  return new Program<Polly>(idl as any, provider);
 };
 // getReadonlyProvider
 // Creates a read-only provider for fetching data without signing transactions

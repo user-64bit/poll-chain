@@ -35,3 +35,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 tmp
+
+# Anchor build output
+/anchor/target/*
+!/anchor/target/idl/
+!/anchor/target/idl/**
+!/anchor/target/types/
+!/anchor/target/types/**
