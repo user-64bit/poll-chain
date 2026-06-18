@@ -1,8 +1,9 @@
 import { SolanaProvider } from "@/components/solana/solana-provider";
 import { UiLayout } from "@/components/ui/ui-layout";
 
-
-const links: { label: string; path: string }[] = [];
+const links: { label: string; path: string }[] = [
+  { label: "Polls", path: "/polls" },
+];
 
 export default function RootLayout({
   children,
@@ -10,12 +11,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <SolanaProvider>
-          <UiLayout links={links}>{children}</UiLayout>
-        </SolanaProvider>
-      </body>
-    </html>
+    <SolanaProvider>
+      <UiLayout links={links}>{children}</UiLayout>
+    </SolanaProvider>
   );
 }

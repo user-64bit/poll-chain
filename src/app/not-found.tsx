@@ -1,36 +1,33 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 px-4">
-      <div className="text-center">
-        <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
-        <div className="mb-8">
-          <svg
-            className="mx-auto h-32 w-32 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <h2 className="text-3xl font-semibold text-gray-900 mb-2">
-          Page Not Found
-        </h2>
-        <p className="text-gray-600 mb-8">
-          Oops! The page you&apos;re looking for doesn&apos;t exist.
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
+      <div className="spotlight pointer-events-none absolute inset-0" aria-hidden />
+      <div className="bg-ledger-grid pointer-events-none absolute inset-0 opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" aria-hidden />
+      <div className="relative">
+        <p className="font-mono text-sm uppercase tracking-[0.2em] text-brand">
+          404 · off-chain
         </p>
-        <Button asChild>
-          <Link href="/">Return Home</Link>
-        </Button>
+        <h1 className="mt-4 font-display text-4xl font-bold tracking-tight sm:text-5xl">
+          This page isn&apos;t on the ledger.
+        </h1>
+        <p className="mx-auto mt-4 max-w-sm text-muted-foreground">
+          The poll or page you&apos;re looking for doesn&apos;t exist — or was
+          never recorded.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Button asChild size="lg" className="gap-2">
+            <Link href="/">
+              <ArrowLeft className="h-4 w-4" /> Back home
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link href="/polls">Browse polls</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

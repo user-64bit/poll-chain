@@ -29,18 +29,18 @@ export const Spinner = ({ size }: SpinnerProps) => {
     <div className={cn(spinnerVariants({ size }), "flex items-center justify-center")}>
       <motion.span
         className="block absolute h-full w-full rounded-full border-t-2 border-r-2 border-transparent"
-        style={{ 
-          borderTopColor: "var(--primary)",
-          borderRightColor: "var(--primary)",
+        style={{
+          borderTopColor: "hsl(var(--primary))",
+          borderRightColor: "hsl(var(--primary))",
         }}
         animate={{ rotate: 360 }}
         transition={spinTransition}
       />
       <motion.span
         className="block absolute h-full w-full rounded-full border-b-2 border-l-2 border-transparent opacity-70"
-        style={{ 
-          borderBottomColor: "var(--primary)",
-          borderLeftColor: "var(--primary)",
+        style={{
+          borderBottomColor: "hsl(var(--primary))",
+          borderLeftColor: "hsl(var(--primary))",
           scale: 0.8,
         }}
         animate={{ rotate: -360 }}

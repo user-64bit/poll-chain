@@ -1,192 +1,90 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { PollProps, PollStatus } from "@/utils/types";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip";
-import { getPollWinner } from "@/utils/helper";
+import { PollProps } from "@/utils/types";
+import Link from "next/link";
+import { Card } from "./ui/card";
+import { LedgerBar } from "./ui/ledger-bar";
+import { StatusPill } from "./ui/status-pill";
 import SharePollDialog from "./share-poll-dailog";
 import { motion } from "framer-motion";
-import { CalendarIcon, TrendingUpIcon, CheckCircleIcon, ClockIcon } from "lucide-react";
+import { ArrowRight, Share2, Trophy } from "lucide-react";
+import { getTimeframe, timeframeLabel, formatNumber } from "@/lib/format";
+import { getPollWinner } from "@/utils/helper";
 
 export const PollCard = ({ poll }: { poll: PollProps }) => {
-  const router = useRouter();
-  const [pollStatus, setPollStatus] = useState<PollStatus>(PollStatus.upcoming);
-  const pollStartDate = new Date(poll.startDate);
-  const pollEndDate = new Date(poll.endDate);
-  const pollOutput = getPollWinner(poll);
-  const now = new Date();
-  const totalVotes = poll.options.reduce((acc, curr) => acc + curr.votes, 0);
-  const diffDays = Math.ceil(
-    Math.abs(
-      (pollStatus === PollStatus.upcoming
-        ? pollStartDate.getTime()
-        : pollEndDate.getTime()) - now.getTime()
-    ) /
-      (1000 * 60 * 60 * 24)
-  );
-
-  useEffect(() => {
-    if (now >= pollStartDate && now <= pollEndDate) {
-      setPollStatus(PollStatus.active);
-    } else if (now < pollStartDate) {
-      setPollStatus(PollStatus.upcoming);
-    } else {
-      setPollStatus(PollStatus.closed);
-    }
-  }, [poll.startDate, poll.endDate]);
-
-  const statusInfo = {
-    [PollStatus.upcoming]: {
-      icon: <ClockIcon className="h-4 w-4 mr-1" />,
-      text: `Starts in ${diffDays} day${diffDays !== 1 ? "s" : ""}`,
-      color: "text-amber-500 dark:text-amber-400",
-      bgColor: "bg-amber-500/10 dark:bg-amber-400/10"
-    },
-    [PollStatus.active]: {
-      icon: <TrendingUpIcon className="h-4 w-4 mr-1" />,
-      text: `Ends in ${diffDays} day${diffDays !== 1 ? "s" : ""}`,
-      color: "text-green-500 dark:text-green-400",
-      bgColor: "bg-green-500/10 dark:bg-green-400/10"
-    },
-    [PollStatus.closed]: {
-      icon: <CheckCircleIcon className="h-4 w-4 mr-1" />,
-      text: "Poll is closed",
-      color: "text-red-500 dark:text-red-400",
-      bgColor: "bg-red-500/10 dark:bg-red-400/10"
-    }
-  };
+  const totalVotes = poll.options.reduce((acc, o) => acc + o.votes, 0);
+  const frame = getTimeframe(poll.startDate, poll.endDate);
+  const winner = frame === "closed" ? getPollWinner({ ...poll, totalVotes }) : null;
+  const leading = totalVotes > 0
+    ? poll.options.reduce((a, b) => (b.votes > a.votes ? b : a))
+    : null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      whileHover={{ y: -5 }}
-      className="w-full lg:w-[300px]"
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -4 }}
+      className="h-full"
     >
-      <Card className="w-full h-full flex flex-col p-1 border border-border/40 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden backdrop-blur-sm bg-card/80">
-        <CardHeader className="pb-2 relative">
-          {pollStatus === PollStatus.closed && pollOutput && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="absolute -right-2 -top-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-xs font-medium py-1 px-2 rounded-full shadow-md"
-            >
-              Winner! 🎉
-            </motion.div>
-          )}
-          
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusInfo[pollStatus].color} ${statusInfo[pollStatus].bgColor} mb-2`}>
-            {statusInfo[pollStatus].icon}
-            {statusInfo[pollStatus].text}
+      <Card className="group flex h-full flex-col gap-4 p-5 transition-shadow duration-300 hover:border-brand/40 hover:shadow-card-hover">
+        <div className="flex items-center justify-between gap-2">
+          <StatusPill frame={frame} label={frame === "closed" ? "Closed" : timeframeLabel(poll.startDate, poll.endDate)} />
+          <span className="font-mono text-xs text-muted-foreground">#{poll.id}</span>
+        </div>
+
+        <Link href={`/poll/${poll.publicKey}`} className="block">
+          <h3 className="font-display text-lg font-semibold leading-snug tracking-tight text-foreground transition-colors group-hover:text-brand">
+            {poll.title}
+          </h3>
+        </Link>
+
+        {winner && (
+          <div className="flex items-center gap-1.5 text-sm">
+            <Trophy className="h-4 w-4 text-upcoming" />
+            <span className="text-muted-foreground">Winner</span>
+            <span className="font-semibold text-foreground">{winner.name}</span>
           </div>
-          
-          <CardTitle className="text-lg font-semibold group">
-            <span className="bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-300 dark:to-gray-500 bg-clip-text text-transparent">
-              {poll.title.slice(0, 30)}
-              {poll.title.length > 30 && "..."}
-            </span>
-          </CardTitle>
-          
-          {pollStatus === PollStatus.closed && pollOutput && (
-            <p className="text-sm mt-1 font-medium">
-              Winner: <span className="font-bold text-primary">{pollOutput.name}</span>
+        )}
+
+        <div className="mt-auto space-y-3">
+          <LedgerBar
+            options={poll.options}
+            totalVotes={totalVotes}
+            height="h-8"
+            leadingId={leading?.id}
+          />
+
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs text-muted-foreground">
+              <span className="text-foreground">{formatNumber(totalVotes)}</span> votes
+              <span className="px-1.5 text-border">·</span>
+              {poll.options.length} options
             </p>
-          )}
-        </CardHeader>
-        
-        <CardContent className="flex-grow flex flex-col justify-between py-2">
-          {totalVotes > 0 ? (
-            <div className="space-y-2">
-              <TooltipProvider>
-                <div className="w-full h-8 rounded-full overflow-hidden flex cursor-pointer bg-muted/30">
-                  {poll.options.map((option, index) => (
-                    <Tooltip key={option.name}>
-                      <TooltipTrigger asChild>
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(option.votes / totalVotes) * 100}%` }}
-                          transition={{ duration: 1, delay: index * 0.1, type: "spring" }}
-                          className={`h-full ${option.color} relative transition-all duration-300 ease-in-out`}
-                          whileHover={{ opacity: 0.8 }}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="bottom"
-                        className="bg-popover text-popover-foreground border border-border/40 p-2 rounded-xl text-xs shadow-lg"
-                      >
-                        <p className="font-medium">{option.name}</p>
-                        <p>
-                          {option.votes} votes ({((option.votes / totalVotes) * 100).toFixed(1)}%)
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                </div>
-              </TooltipProvider>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-full h-8 rounded-full overflow-hidden flex cursor-pointer">
-                      <motion.div
-                        animate={{ 
-                          background: ["hsl(var(--muted))", "hsl(var(--muted-foreground))", "hsl(var(--muted))"] 
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="h-full w-full relative opacity-30"
-                      />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="bottom"
-                    className="bg-popover text-popover-foreground p-2 rounded-xl text-xs"
+            <div className="flex items-center gap-1">
+              <SharePollDialog
+                pollAdress={poll.publicKey}
+                candidates={poll.options}
+                trigger={
+                  <button
+                    aria-label="Share poll"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
-                    <p>No votes casted yet</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                    <Share2 className="h-4 w-4" />
+                  </button>
+                }
+              />
+              <Link
+                href={`/poll/${poll.publicKey}`}
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium text-brand transition-colors hover:bg-brand/10"
+              >
+                View
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
             </div>
-          )}
-          
-          <div className="mt-auto space-y-1">
-            {pollStatus !== PollStatus.upcoming && (
-              <p className="text-sm mt-3 flex items-center justify-center">
-                <CalendarIcon className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
-                <span className="text-muted-foreground">Total Votes:</span>{" "}
-                <span className="font-bold ml-1">{totalVotes ?? 0}</span>
-              </p>
-            )}
           </div>
-        </CardContent>
-        
-        <CardFooter className="pt-2 pb-4 flex gap-x-2">
-          <Button
-            onClick={() => router.push("/poll/" + poll.publicKey)}
-            className="w-full rounded-full transition-all duration-300 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600"
-          >
-            View Poll
-          </Button>
-          <SharePollDialog pollAdress={poll.publicKey} candidates={poll.options} />
-        </CardFooter>
+        </div>
       </Card>
     </motion.div>
   );

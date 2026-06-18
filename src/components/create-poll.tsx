@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -17,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Program } from "@coral-xyz/anchor";
 import { Polly } from "@project/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { PlusCircle, X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import CalendarPopover from "./calendar-popover/calendar-popover";
 import { useAnchorProvider } from "./solana/solana-provider";
@@ -26,9 +25,11 @@ import { Spinner } from "./spinner";
 export function CreatePollDialog({
   program,
   publicKey,
+  onCreated,
 }: {
   program: Program<Polly>;
   publicKey: PublicKey;
+  onCreated?: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -37,89 +38,98 @@ export function CreatePollDialog({
   const [options, setOptions] = useState<string[]>(["", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const { connection, wallet } = useAnchorProvider();
-  const [validatationError, setValidatationError] = useState<{
-    [key: string]: boolean;
-  }>({
-    title: false,
-    startDate: false,
-    endDate: false,
-    options: false,
-  });
+  const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
   const { toast } = useToast();
 
-  const handleAddOption = () => {
-    setOptions([...options, ""]);
+  const reset = () => {
+    setTitle("");
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setOptions(["", ""]);
+    setErrors({});
   };
 
-  const handleRemoveOption = (index: number) => {
+  const handleAddOption = () => setOptions([...options, ""]);
+  const handleRemoveOption = (index: number) =>
     setOptions(options.filter((_, i) => i !== index));
-  };
-
   const handleOptionChange = (index: number, value: string) => {
-    const newOptions = [...options];
-    newOptions[index] = value;
-    setOptions(newOptions);
+    const next = [...options];
+    next[index] = value;
+    setOptions(next);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let currentDate = new Date();
-    currentDate.setDate(currentDate.getDate() - 1);
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
     if (
-      (startDate && startDate < currentDate) ||
-      (endDate && endDate < currentDate)
+      (startDate && startDate < yesterday) ||
+      (endDate && endDate < yesterday)
     ) {
       toast({
-        title: "What you doing ser?",
-        description: "Start date or/and end date cannot be in the past",
+        title: "Dates can't be in the past",
+        description: "Pick a start and end date that are today or later.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (startDate && endDate && endDate <= startDate) {
+      toast({
+        title: "End must be after start",
+        description: "The voting window needs to close after it opens.",
         variant: "destructive",
       });
       return;
     }
     if (!wallet || !connection || !publicKey) {
       toast({
-        title: "Wallet not connected",
-        description: "Please connect your wallet to continue",
+        title: "Connect your wallet",
+        description: "You need a connected wallet to put a poll on-chain.",
         variant: "destructive",
       });
       return;
     }
-    if (
-      title === "" ||
-      startDate === undefined ||
-      endDate === undefined ||
-      options.map((option) => option === "").includes(true)
-    ) {
-      setValidatationError({
-        title: title === "",
-        startDate: startDate === undefined,
-        endDate: endDate === undefined,
-        options: options.map((option) => option === "").includes(true),
-      });
+
+    const nextErrors = {
+      title: title.trim() === "",
+      startDate: startDate === undefined,
+      endDate: endDate === undefined,
+      options: options.some((o) => o.trim() === ""),
+    };
+    if (Object.values(nextErrors).some(Boolean)) {
+      setErrors(nextErrors);
       return;
     }
+
     setIsLoading(true);
     try {
       await createPollWithCandidates({
         program,
         publicKey,
-        startDate: startDate?.getTime()! / 1000,
-        endDate: endDate?.getTime()! / 1000,
-        title,
-        options,
+        startDate: startDate!.getTime() / 1000,
+        endDate: endDate!.getTime() / 1000,
+        title: title.trim(),
+        options: options.map((o) => o.trim()),
         connection,
         wallet,
       });
-      // Hack: hard refresh the page to show the new poll
-      window.location.reload();
+      toast({
+        title: "Poll created on-chain",
+        description: "Your poll is live and recorded on Solana devnet.",
+      });
+      setIsOpen(false);
+      reset();
+      onCreated?.();
     } catch (error) {
       console.error(error);
+      toast({
+        title: "Couldn't create the poll",
+        description:
+          "The transaction was rejected or failed. Check your wallet and try again.",
+        variant: "destructive",
+      });
     } finally {
-      setIsOpen(false);
-      setTitle("");
-      setStartDate(undefined);
-      setEndDate(undefined);
-      setOptions(["", ""]);
       setIsLoading(false);
     }
   };
@@ -127,100 +137,114 @@ export function CreatePollDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size={"lg"} className="transition-colors duration-300">
-          Create Poll
+        <Button size="lg" className="gap-2">
+          <Plus className="h-4 w-4" />
+          Create poll
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-center">Create New Poll</DialogTitle>
-          <DialogDescription>Approx cost: xxx SOL</DialogDescription>
+          <DialogTitle className="font-display text-xl">Create a poll</DialogTitle>
+          <DialogDescription>
+            Your question and every vote are recorded on Solana devnet. Once
+            it&apos;s live, it can&apos;t be edited or deleted.
+          </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-5 py-2">
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-right">
-                Title
-              </Label>
+              <Label htmlFor="title">Question</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={280}
-                className="col-span-3"
+                placeholder="e.g. Who's the GOAT — Sachin or Virat?"
               />
-              {validatationError.title && (
-                <p className="text-red-500 text-xs">Title is required</p>
+              {errors.title && (
+                <p className="text-xs text-destructive">Add a question to ask.</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="start-date" className="text-right">
-                Start Date
-              </Label>
-              <CalendarPopover date={startDate} setDate={setStartDate} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="end-date" className="text-right">
-                End Date
-              </Label>
-              <CalendarPopover date={endDate} setDate={setEndDate} />
-            </div>
-            <div className="space-y-2 w-full">
-              <div className="grid items-center gap-4 w-full">
-                <div className="space-y-2 w-full">
-                  <Label className="text-left">
-                    <p>Options</p>
-                    <p className="text-xs text-muted-foreground">Max 32 characters per option</p>
-                  </Label>
-                  <div className="grid grid-cols-2 w-full gap-2">
-                    {options.map((option, index) => (
-                      <div
-                        key={index}
-                        className="flex w-full items-center gap-2"
-                      >
-                        <Input
-                          value={option}
-                          onChange={(e) =>
-                            handleOptionChange(index, e.target.value)
-                          }
-                          maxLength={32}
-                          placeholder={`Option ${index + 1}`}
-                        />
-                        {index >= 2 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRemoveOption(index)}
-                            className="flex-shrink-0"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="mt-2"
-                    onClick={handleAddOption}
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Option
-                  </Button>
-                </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Opens</Label>
+                <CalendarPopover date={startDate} setDate={setStartDate} />
+                {errors.startDate && (
+                  <p className="text-xs text-destructive">Pick a start date.</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>Closes</Label>
+                <CalendarPopover date={endDate} setDate={setEndDate} />
+                {errors.endDate && (
+                  <p className="text-xs text-destructive">Pick an end date.</p>
+                )}
               </div>
             </div>
+
+            <div className="space-y-2">
+              <div className="flex items-baseline justify-between">
+                <Label>Options</Label>
+                <span className="text-xs text-muted-foreground">
+                  Max 32 characters each
+                </span>
+              </div>
+              <div className="space-y-2">
+                {options.map((option, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <span className="w-5 shrink-0 text-center font-mono text-xs text-muted-foreground">
+                      {index + 1}
+                    </span>
+                    <Input
+                      value={option}
+                      onChange={(e) => handleOptionChange(index, e.target.value)}
+                      maxLength={32}
+                      placeholder={`Option ${index + 1}`}
+                    />
+                    {index >= 2 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveOption(index)}
+                        className="shrink-0 text-muted-foreground hover:text-destructive"
+                        aria-label={`Remove option ${index + 1}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {errors.options && (
+                <p className="text-xs text-destructive">
+                  Every option needs a label.
+                </p>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-1 gap-2"
+                onClick={handleAddOption}
+              >
+                <Plus className="h-4 w-4" />
+                Add option
+              </Button>
+            </div>
           </div>
-          <DialogFooter>
-            <Button
-              type="submit"
-              className="w-full transition-colors duration-300"
-            >
-              {isLoading ? <Spinner /> : "Push to Blockchain"}
+
+          <div className="mt-2 space-y-2">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? <Spinner size="sm" /> : "Create poll on-chain"}
             </Button>
-          </DialogFooter>
+            <p className="text-center text-xs text-muted-foreground">
+              You&apos;ll approve one transaction. Network fee only — a few
+              fractions of a cent on devnet.
+            </p>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

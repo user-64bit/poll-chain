@@ -1,33 +1,21 @@
 import { CandidateProps, PollOptionProps, PollProps } from "./types";
-
-export function stringToColorHash(inputString: string) {
-  let hash = 0;
-  for (let i = 0; i < inputString.length; i++) {
-    hash = inputString.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  let color = "#";
-  for (let i = 0; i < 3; i++) {
-    const value = (hash >> (i * 8)) & 0xff;
-    color += ("00" + value.toString(16)).slice(-2);
-  }
-
-  return color;
-}
+import { getOptionColor } from "@/lib/colors";
 
 export function searilizedPollData(
   poll: PollProps,
   candidates: CandidateProps[]
 ) {
   let candidatesData: any = [];
-  for (let candidate of candidates) {
+  // Stable order by id so palette colors are deterministic.
+  const sorted = [...candidates].sort((a, b) => a.id - b.id);
+  sorted.forEach((candidate, index) => {
     candidatesData.push({
       id: candidate.id,
       name: candidate.name,
       votes: candidate.votes,
-      color: stringToColorHash(candidate.name),
+      color: getOptionColor(index),
     });
-  }
+  });
   const now = new Date();
   const startDate = new Date(poll.startDate);
   const endDate = new Date(poll.endDate);

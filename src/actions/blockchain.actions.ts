@@ -13,6 +13,7 @@ import {
   PollProps,
   VoteProps,
 } from "@/utils/types";
+import { getOptionColor } from "@/lib/colors";
 
 // constants
 const RPC_ENDPOINT = "https://api.devnet.solana.com";
@@ -284,29 +285,66 @@ export const hasVoted = async ({
 };
 
 // getAllPollsWithCandidates
+//
+// The poll list is read from the chain with two heavy `getProgramAccounts`
+// calls. Both the landing page and the dashboard need it, and the public
+// devnet RPC rate-limits that method aggressively — refetching on every
+// navigation triggers 429s and an empty list. We cache the result for a short
+// window and dedupe concurrent callers so navigating around issues a single
+// fetch. Pass `force: true` to bypass the cache (e.g. right after creating a
+// poll) so fresh data shows immediately.
+let _pollsCache: { ts: number; data: PollProps[] } | null = null;
+let _pollsInflight: Promise<PollProps[]> | null = null;
+const POLLS_TTL_MS = 20_000;
+
+export const invalidatePollsCache = () => {
+  _pollsCache = null;
+};
+
 export const getAllPollsWithCandidates = async ({
   program,
+  force = false,
 }: {
   program: Program<Polly>;
-}) => {
-  const polls = await program.account.poll.all();
-  const candidatesData = await program.account.candidate.all();
-  const candidates = serializeCandidates(candidatesData);
-  const candidatesByPoll = serializePolls(polls);
+  force?: boolean;
+}): Promise<PollProps[]> => {
+  const now = Date.now();
+  if (!force) {
+    if (_pollsCache && now - _pollsCache.ts < POLLS_TTL_MS) return _pollsCache.data;
+    if (_pollsInflight) return _pollsInflight;
+  }
 
-  candidates.map((candidate) => {
-    candidatesByPoll.map((poll) => {
-      if (poll.id.toString() === candidate.pollId.toString()) {
-        poll.options.push({
-          id: candidate.id.toString(),
-          name: candidate.name,
-          votes: candidate.votes,
-          color: candidate.hasRegistered ? "bg-green-500" : "bg-red-500",
-        });
-      }
+  const run = (async () => {
+    const polls = await program.account.poll.all();
+    const candidatesData = await program.account.candidate.all();
+    const candidates = serializeCandidates(candidatesData);
+    const candidatesByPoll = serializePolls(polls);
+
+    // Stable order by candidate id so colors are deterministic per poll.
+    const sortedCandidates = [...candidates].sort((a, b) => a.id - b.id);
+    sortedCandidates.forEach((candidate) => {
+      const poll = candidatesByPoll.find(
+        (p) => p.id.toString() === candidate.pollId.toString()
+      );
+      if (!poll) return;
+      poll.options.push({
+        id: candidate.id.toString(),
+        name: candidate.name,
+        votes: candidate.votes,
+        color: getOptionColor(poll.options.length),
+      });
     });
-  });
-  return candidatesByPoll;
+
+    _pollsCache = { ts: Date.now(), data: candidatesByPoll };
+    return candidatesByPoll;
+  })();
+
+  _pollsInflight = run;
+  try {
+    return await run;
+  } finally {
+    if (_pollsInflight === run) _pollsInflight = null;
+  }
 };
 
 // createPollWithCandidates

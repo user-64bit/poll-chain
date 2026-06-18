@@ -1,49 +1,33 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 
-interface PageTransitionProps {
-  children: ReactNode;
-}
-
-const variants = {
-  hidden: { opacity: 0, x: 0, y: 20 },
-  enter: { opacity: 1, x: 0, y: 0 },
-  exit: { opacity: 0, x: 0, y: -20 },
-};
-
-export function PageTransition({ children }: PageTransitionProps) {
+/**
+ * Enter-only page transition.
+ *
+ * We deliberately avoid `AnimatePresence mode="wait"` here: wrapping the App
+ * Router's `children` in a waiting exit animation caused the active page to
+ * remount in a loop, which interrupted in-flight data fetches (the poll list
+ * would stay empty on client-side navigation but load on a hard refresh).
+ *
+ * Keying a single motion element by pathname re-triggers the enter animation
+ * once per real navigation, and leaves the subtree untouched on internal
+ * re-renders (state updates) — so data fetches complete normally.
+ */
+export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={pathname}
-        initial="hidden"
-        animate="enter"
-        exit="exit"
-        variants={variants}
-        transition={{ 
-          type: "spring", 
-          stiffness: 300, 
-          damping: 30,
-          duration: 0.3 
-        }}
-        className="h-full w-full"
-      >
-        {children}
-        
-        {/* Initial loading animation */}
-        <motion.div
-          className="fixed top-0 left-0 w-full h-1 bg-primary z-50"
-          initial={{ scaleX: 0, transformOrigin: "left" }}
-          animate={{ scaleX: 1 }}
-          exit={{ scaleX: 0, transformOrigin: "right" }}
-          transition={{ duration: 0.5 }}
-        />
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      key={pathname}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="w-full"
+    >
+      {children}
+    </motion.div>
   );
-} 
+}
